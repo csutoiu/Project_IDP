@@ -1,4 +1,4 @@
-Dashboard Colaborativ - Etapa 1
+Dashboard Colaborativ - Etapa 2
 Instrumente pentru dezvoltarea programelor
 Student: Sutoiu Maria Cristina
 Grupa: 341C1
@@ -6,7 +6,7 @@ GitHub: https://github.com/csutoiu/Project_IDP
 
 ###################################################################
 
-Cerinta Etapa 1: Implementare interfata functionala
+Cerinta Etapa 2: Implementare interfata functionala
 
 	1. Login - se introduc credentialele userului care sunt verificate in baza de date (momentan implementata sub forma 
 unor fisiere)
@@ -34,7 +34,7 @@ ci doar se prezinta informatiile utilizatorului - se realiza in acest fel o sepa
 
 ###################################################################
 
-Rulare Etapa 1:
+Rulare Etapa 2:
 	1. Se descarca proiectul de pe Git
 	2. cd Project_IDP
 	3. chmod +x run.sh
