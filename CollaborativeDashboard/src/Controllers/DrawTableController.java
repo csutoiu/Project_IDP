@@ -34,7 +34,6 @@ public class DrawTableController extends MouseAdapter implements ActionListener 
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		System.out.println("Click on canvas");
 		if(!canvas.getFigure().isEmpty()) {
 			canvas.drawFigure(e.getX(), e.getY());
 		}
