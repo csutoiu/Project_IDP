@@ -37,7 +37,8 @@ ci doar se prezinta informatiile utilizatorului - se realiza in acest fel o sepa
 Rulare Etapa 1:
 	1. Se descarca proiectul de pe Git
 	2. cd Project_IDP
-	3. ./run.sh
+	3. chmod +x run.sh
+	4. ./run.sh
 
 
 	
