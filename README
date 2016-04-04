@@ -1,0 +1,43 @@
+Dashboard Colaborativ - Etapa 1
+Instrumente pentru dezvoltarea programelor
+Student: Sutoiu Maria Cristina
+Grupa: 341C1
+GitHub: https://github.com/csutoiu/Project_IDP
+
+###################################################################
+
+Cerinta Etapa 1: Implementare interfata functionala
+
+	1. Login - se introduc credentialele userului care sunt verificate in baza de date (momentan implementata sub forma 
+unor fisiere)
+	2. Creare cont - in cazul in care userul nu are cont se apasa butonul de Sign In si se deschide o interfata pentru
+completarea campurilor: Username, Email, Password, Confirm Password; pentru validare toate campurile trebuie completate si se
+verifica formatul email-ului, sa nu existe alt user cu un username identic si confirmarea parolei sa fie corecta; in caz de succes 
+se deschide interfata cu dashbordul si userul va aparea automat in lista de useri online si adaugat in baza de date
+	3. Dashboard - pentru realizarea acestuia am folosit pattern-ul Model View Controller pentru a separa entitatile din aplicatie;
+Momentan modelele sunt reprezentate de useri si grupuri, iar fiecare dintre cele trei view-uri (Login, Sign In, Dashboard) are propriul
+controller. In plus am implementat si un application controller (utilizat in aplicatie prin pattern-ul Singleton)
+care va extrage la logare toate datele existente deja in baza de date (momentan le citeste din fisiere). Pentru fiecare element 
+din interfata care produce un eveniment, controllerul implementeaza si clasa Listener corespunzatoare, extrage datele necesare si
+notifica respectivul element pentru update in gui. Astfel in clasele care implementeaza interfata nu se face nicio prelucrare de date, 
+ci doar se prezinta informatiile utilizatorului - se realiza in acest fel o separare a logicii interne.
+
+	Functionalitati implementate:
+	-creare user
+	-login/logout
+	-join/leave/create group
+	-add user in group
+	-save work group - apare tab bar progress
+	-prezentare dashboard cu functie de desenare cerc, patrat, linie, sageata
+	-chat interactiv + formatare text (posibiltate de schimbare a culorii si a dimensiunii fontului) + buton send
+	-legenda - afisarea userilor care fac parte dintr-un grup
+
+###################################################################
+
+Rulare Etapa 1:
+	1. Se descarca proiectul de pe Git
+	2. cd Project_IDP
+	3. ./run.sh
+
+
+	
