@@ -5,12 +5,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.swing.JOptionPane;
 
 import DataBase.DataBaseManager;
 import Models.Group;
-import Models.User;
+import Models.OnlineUser;
 import gui.DashboardFrame;
 import gui.LaunchFrame;
 import gui.MyCanvas;
@@ -21,8 +24,11 @@ public class DashboardController implements ActionListener {
 	private ApplicationController application = ApplicationController.getInstance();
 	private DashboardFrame view;
 	
-	private String groupChanged, currentUser;
+	private OnlineUser currentUser;
 	private ArrayList<Group> myGroups;
+	
+	private String groupChanged;
+	
 	
 	private HashMap<String, MyCanvas> canvasOfGroups;
 	
@@ -47,23 +53,10 @@ public class DashboardController implements ActionListener {
     	return this.view;
     }
     
-    public void setCurrentUser(String username) {
-    	this.currentUser = username;
-    	this.setMyGroups();
-    }
-    
-    public void setMyGroups() {
-    	ArrayList<Group> groups = application.getGroups();
+    public void setInfoUser(String username) {
+    	this.currentUser = application.getOnlineUser(username);
+    	this.myGroups = this.currentUser.getGroups();
     	
-    	for(int i = 0;i < groups.size();i++) {
-    		ArrayList<User> users = groups.get(i).getUsers();
-    		for(int j = 0; j < users.size();j++) {
-    			
-    			if(this.currentUser.equals(users.get(j).getUsername())) {
-    				this.myGroups.add(groups.get(i));
-    			}
-    		}	
-    	}
     	this.view.initializeTabbedPane();
     }
     
@@ -75,22 +68,15 @@ public class DashboardController implements ActionListener {
     	this.groupChanged = groupChanged;
     }
 
-    public HashMap<String, MyCanvas> getCanvasOfGropus() {
+    public HashMap<String, MyCanvas> getCanvasOfGroups() {
     	return this.canvasOfGroups;
     }
     
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if(e.getActionCommand().equals(Constants.LOGOUT)) {
-			for(int i = 0; i < application.getOnlineUsers().size();i++) {
-				if(application.getOnlineUsers().get(i).getUsername().equals(this.view.getUsername())) {
-					application.getOnlineUsers().remove(i);
-					break;
-				}
-			}
-			
-			DataBaseManager.removeOnlineUserToDataBase(this.view.getUsername());
-			//this.removeUserToGroups();
+			DataBaseManager.removeOnlineUserToDataBase(this.currentUser);
+			this.removeUserToGroups();
 			LaunchFrame frame = new LaunchFrame();
 			this.view.getFrame().setVisible(false);
 			frame.getFrame().setVisible(true);
@@ -99,27 +85,25 @@ public class DashboardController implements ActionListener {
 			String response = JOptionPane.showInputDialog
 					(this.view.getFrame(),"Enter Group Name.","");
 			String message = "";
+			Group group;
 			if(response.isEmpty()) {
 				message = "Please enter a valid name.";
 			} else {
-				for(int i = 0;i < application.getGroups().size();i++) {
-					if(response.equals(application.getGroups().get(i).getGroupName())) {
-						message = "Group already exists.";
-					}
-				}
+				group = application.getGroup(response);
+				if(group != null)
+					message = "Group already exists.";
 			}
 			if(message.isEmpty()) {
-				ArrayList<User> users = new ArrayList<>();
-				users.add(new User(this.view.getUsername(), null, null));
-				Group newGroup = new Group(response, users);
-				application.getGroups().add(newGroup);
-				ArrayList<String> usersTemp = new ArrayList<>();
-				usersTemp.add(this.view.getUsername());
-				DataBaseManager.addGroupToDataBase(response, usersTemp);
+				group = new Group(response);
+				group.setOnlineUser("red", currentUser);
+				this.currentUser.getGroups().add(group);
+				application.getGroups().add(group);
+
+				DataBaseManager.addGroupToDataBase(response, this.currentUser.getUsername(), "red");
 				this.view.addNewGroup(response);
 				this.view.insertNewTab(response);
-				this.view.addUserInLegend(this.view.getUsername(), Color.red);
-				this.getCanvasOfGropus().get(response).setColor(Color.red);
+				//this.view.addUserInLegend(this.view.getUsername(), Color.red);
+				this.getCanvasOfGroups().get(response).setColor(Color.red);
 			} else {
 				JOptionPane.showMessageDialog(this.view.getFrame(), message, null, JOptionPane.ERROR_MESSAGE);
 			}
@@ -157,7 +141,7 @@ public class DashboardController implements ActionListener {
 						break;
 					}
 				}
-				group.getUsers().add(new User(response, null, null));
+				//group.getUsers().add(new User(response, null, null));
 				DataBaseManager.addNewUserToGroup(response, groupChanged);
 				this.view.addNewUserToGroup(response, groupChanged);
 			} else {
@@ -182,13 +166,13 @@ public class DashboardController implements ActionListener {
 					break;
 				}
 			}
-			User newUser = new User(this.view.getUsername(), null, null, color);
+			/*User newUser = new User(this.view.getUsername(), null, null, color);
 			group.getUsers().add(newUser);
 			DataBaseManager.addNewUserToGroup(this.view.getUsername(), groupChanged);
 			this.view.addNewUserToGroup(this.view.getUsername(), groupChanged);
 			this.view.insertNewTab(groupChanged);
 			this.view.addUserInLegend(this.view.getUsername(), ControlUtil.getNewColor(color));
-			this.canvasOfGroups.get(groupChanged).setColor(ControlUtil.getNewColor(color));
+			this.canvasOfGroups.get(groupChanged).setColor(ControlUtil.getNewColor(color));*/
 		}
 		
 		else if(e.getActionCommand().equals(Constants.LEAVE_GROUP)) {
@@ -215,7 +199,7 @@ public class DashboardController implements ActionListener {
 			}
 			
 			this.view.removeGroupTab(groupChanged);
-			this.getCanvasOfGropus().remove(groupChanged);
+			this.getCanvasOfGroups().remove(groupChanged);
 			
 		}
 		
@@ -238,23 +222,21 @@ public class DashboardController implements ActionListener {
 	
 	/* remove user to data base at logout */
 	public void removeUserToGroups() {
-		ArrayList<Group> groups = application.getGroups();
-		for(int i = 0; i < groups.size();i++) {
-			DataBaseManager.removeUserToGroup(this.view.getUsername(), groups.get(i).getGroupName());
-			ArrayList<User> users = groups.get(i).getUsers();
-			for(int j = 0;j < users.size();j++) {
-				if(users.get(j).getUsername().equals(this.view.getUsername())) {
-					users.remove(j);
-					break;
-				}
+		for(Group group : this.myGroups) {
+			for (Iterator<Map.Entry<String,OnlineUser>> it = group.getUsers().entrySet().iterator(); it.hasNext();) {
+				 Map.Entry<String,OnlineUser> e = it.next();
+				 if (this.currentUser.equals(e.getValue())) {
+					 it.remove();
+				 }
 			}
-			if(users.isEmpty()) {
-				DataBaseManager.deleteGroup(groups.get(i).getGroupName());
-				groups.remove(i);
+			if(group.getUsers().isEmpty()) {
+				application.getGroups().remove(group);
 			}
 		}
+		DataBaseManager.removeUserFromGroups(this.currentUser.getUsername());
 	}
 	
+	/* Methods used by frame */
 	public String getCurrentUser() {
 		return this.view.getUsername();
 	}
@@ -277,16 +259,13 @@ public class DashboardController implements ActionListener {
 	}
 	
 	public String[] getUsersOfGroup(String groupName) {
-		String[] users = null;
-		for(int i = 0;i < application.getGroups().size();i++) {
-			if(groupName.equals(application.getGroups().get(i).getGroupName())) {
-				Group group = application.getGroups().get(i);
-				users = new String[group.getUsers().size()];
-				for(int j = 0;j < group.getUsers().size();j++) {
-					users[j] = group.getUsers().get(j).getUsername();
-				}
-				break;
-			}
+		Group group = application.getGroup(groupName);
+		String[] users = new String[group.getUsers().size()];
+		int i = 0;
+		for (Iterator<Map.Entry<String,OnlineUser>> it = group.getUsers().entrySet().iterator(); it.hasNext();i++) {
+			 Map.Entry<String,OnlineUser> e = it.next();
+			 users[i] = e.getValue().getUsername();
+			 
 		}
 		return users;
 	}

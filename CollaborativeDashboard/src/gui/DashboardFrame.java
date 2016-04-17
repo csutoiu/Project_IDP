@@ -316,7 +316,7 @@ public class DashboardFrame {
 	
 	/* JTabbedPane methods */
 	public void initializeTabbedPane() {
-		ArrayList<Models.Group> groups = this.controller.getMyGroups();
+		/*ArrayList<Models.Group> groups = this.controller.getMyGroups();
 		for(int i = 0; i < groups.size();i++) {
 			if(i == 0) {
 				String[] users = this.controller.getUsersOfGroup(groups.get(i).getGroupName());
@@ -324,7 +324,7 @@ public class DashboardFrame {
 			}
 			JComponent panel = this.makeDrawTable(groups.get(i).getGroupName());
 			tabbedPane.addTab(groups.get(i).getGroupName(), panel);
-		}
+		}*/
 	}
 	
 	public void insertNewTab(String groupName) {
@@ -393,7 +393,7 @@ public class DashboardFrame {
         
         panel.add(canvas);
      
-        this.controller.getCanvasOfGropus().put(groupName, canvas);
+        this.controller.getCanvasOfGroups().put(groupName, canvas);
         return panel;
 	}
 	
@@ -456,7 +456,7 @@ public class DashboardFrame {
 	
 	public void setUsername(String username) {
 		this.username.setText(username);
-		this.controller.setCurrentUser(username);
+		this.controller.setInfoUser(username);
 	}
 	
 	public String getUsername() {

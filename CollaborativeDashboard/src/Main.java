@@ -20,8 +20,12 @@ public class Main {
 			}
 		});
 		
-		@SuppressWarnings("unused")
 		ApplicationController loadApplication = ApplicationController.getInstance();
+		try {
+			loadApplication.setInfo();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 }

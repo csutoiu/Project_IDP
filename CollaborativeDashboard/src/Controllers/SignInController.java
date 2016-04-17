@@ -8,6 +8,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import DataBase.DataBaseManager;
+import Models.OnlineUser;
 import Models.User;
 import gui.CreateAccountFrame;
 import gui.DashboardFrame;
@@ -46,25 +47,23 @@ public class SignInController implements ActionListener, DocumentListener {
 				return;
 			}
 			
-			ArrayList<User> onlineUsers = application.getOnlineUsers();
+			ArrayList<OnlineUser> onlineUsers = application.getOnlineUsers();
 			for(int i = 0; i < onlineUsers.size();i++) {
-				if(onlineUsers.get(i).getUsername().equals(username) && 
-						onlineUsers.get(i).getPassword().equals(password)) {
+				if(onlineUsers.get(i).getUsername().equals(username)) {
 					this.handlerForResult(Constants.ERROR_LOGIN_ALREADY);
 					return;
 				}
 			}
 			
-			ArrayList<User> users = application.getUsers();
-			for(int i = 0; i < users.size();i++) {
-				if(users.get(i).getUsername().equals(username) && 
-						users.get(i).getPassword().equals(password)) {
-					DataBaseManager.addOnlineUserToDataBase(username, password);
-					application.getOnlineUsers().add(new User(username, null, password));
+			User user = application.getUser(username);
+			if(user != null) {
+				if(user.getPassword().equals(password)) {
+					DataBaseManager.addOnlineUserToDataBase(username);
 					this.handlerForResult(Constants.SUCCESS);
 					return;
 				}
 			}
+
 			this.handlerForResult(Constants.ERROR_LOGIN);
 			
 		} else if(e.getActionCommand().equals(Constants.SIGN_UP)) {

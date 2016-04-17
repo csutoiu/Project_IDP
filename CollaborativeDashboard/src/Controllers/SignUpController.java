@@ -74,10 +74,9 @@ public class SignUpController implements ActionListener, DocumentListener  {
 				}
 			}
 		
-			this.application.getUsers().add(new User(username, email, password));
-			this.application.getOnlineUsers().add(new User(username, email, password));
+			//this.application.getUsers().add(new User(username, email, password));
 			DataBaseManager.addUserToDataBase(username, email, password);
-			DataBaseManager.addOnlineUserToDataBase(username, password);
+			//TO DO - add an observer
 			this.handlerForResult(Constants.SUCCESS);
 		}
 	}

@@ -5,16 +5,19 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 
+import javax.xml.crypto.Data;
+
+import DataBase.DataBaseManager;
 import Models.Group;
+import Models.OnlineUser;
 import Models.User;
 
 public class ApplicationController {
 
 	private static ApplicationController me;
 	
-	// TO DO - complete from data base //
 	private ArrayList<User> users;
-	private ArrayList<User> onlineUsers;
+	private ArrayList<OnlineUser> onlineUsers;
 	private ArrayList<Group> groups;
 
     private ApplicationController() {
@@ -23,96 +26,53 @@ public class ApplicationController {
     public static ApplicationController getInstance() {
         if (me == null) {
             me = new ApplicationController();
-        	try {
-        		me.users = ApplicationController.createUsersList();
-        	} catch (Exception e) {
-        		throw new ExceptionInInitializerError(e);
-        	}
-        	try {
-        		me.groups = ApplicationController.createGroupsList();
-        	} catch (Exception e) {
-        		throw new ExceptionInInitializerError(e);
-        	}
-            try {
-            	me.onlineUsers = ApplicationController.createOnlineUsersList();
-            } catch (Exception e) {
-        		throw new ExceptionInInitializerError(e);
-        	} 
+        	me.users = new ArrayList<User>();
+        	me.onlineUsers = new ArrayList<OnlineUser>();
+            me.groups = new ArrayList<Group>();
         }
-
         return me;
     }
     
-    private static ArrayList<User> createUsersList() {
-    	ArrayList<User> users = new ArrayList<User>();
-    	
-    	File f = new File("users.txt");
-		if(f.exists()) {
-			try (BufferedReader br = new BufferedReader(new FileReader("users.txt"))) {
-			    String line;
-			    while ((line = br.readLine()) != null) {
-			       String[] fields = line.split(" ");
-			       users.add(new User(fields[0], fields[1], fields[2]));
-			    }
-			} catch (Exception e) {
-				System.out.println(e);
-			}
-		}
-
-    	return users;
-    }
-    
-    private static ArrayList<User> createOnlineUsersList() {
-    	ArrayList<User> onlineUsers = new ArrayList<User>();
-    	
-    	File f = new File("onlineUsers.txt");
-		if(f.exists()) {
-			try (BufferedReader br = new BufferedReader(new FileReader("onlineUsers.txt"))) {
-			    String line;
-			    while ((line = br.readLine()) != null) {
-			       String[] fields = line.split(" ");
-			       onlineUsers.add(new User(fields[0], null, fields[1]));
-			    }
-			} catch (Exception e) {
-				System.out.println(e);
-			}
-		}
-
-    	return onlineUsers;
-    }
-    
-    private static ArrayList<Group> createGroupsList() {
-    	ArrayList<Group> groups = new ArrayList<Group>();
-    	
-    	File f = new File("groups.txt");
-		if(f.exists()) {
-			try (BufferedReader br = new BufferedReader(new FileReader("groups.txt"))) {
-			    String line;
-			    while ((line = br.readLine()) != null) {
-			       String[] fields = line.split(" ");
-			       ArrayList<User> users = new ArrayList<User>(); 
-			       for(int i = 1;i < fields.length;i++) {
-			    	   users.add(new User(fields[i], null, null));
-			       }
-			       groups.add(new Group(fields[0], users));
-			    }
-			} catch (Exception e) {
-				System.out.println(e);
-			}
-		}
-    	
-    	return groups;
+    public void setInfo() throws Exception {
+    	DataBaseManager.setUsers();
+    	DataBaseManager.setOnlineUsers();
+    	DataBaseManager.setGroups();
     }
     
     public ArrayList<User> getUsers() {
     	return this.users;
     }
     
-    public ArrayList<User> getOnlineUsers() {
+    public ArrayList<OnlineUser> getOnlineUsers() {
     	return this.onlineUsers;
     }
     
     public ArrayList<Group> getGroups() {
     	return this.groups;
     }
+    
+    public Group getGroup(String groupname) {
+    	for(Group group : this.groups) {
+    		if(group.getGroupName().equals(groupname))
+    			return group;
+    	}
+    	return null;
+    }
+    
+    public User getUser(String username) {
+    	for(User user : this.users) {
+    		if(user.getUsername().equals(username))
+    			return user;
+    	}
+    	return null;
+    }
+    
+    public OnlineUser getOnlineUser(String username) {
+    	for(OnlineUser user : this.onlineUsers) {
+    		if(user.getUsername().equals(username))
+    			return user;
+    	}
+    	return null;
+    }
+ 
 }

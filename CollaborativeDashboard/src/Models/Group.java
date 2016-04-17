@@ -1,17 +1,17 @@
 package Models;
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Group {
 
 	private String groupName;
-	private ArrayList<User> users;
+	private HashMap<String, OnlineUser> users;
 	
 	public Group(String groupName) {
 		this.groupName = groupName;
-		this.users = new ArrayList<User>();
+		this.users = new HashMap<String, OnlineUser>();
 	}
 	
-	public Group(String groupName, ArrayList<User> users) {
+	public Group(String groupName, HashMap<String, OnlineUser> users) {
 		this.groupName = groupName;
 		this.users = users;
 	}
@@ -20,13 +20,17 @@ public class Group {
 		return this.groupName;
 	}
 	
-	public ArrayList<User> getUsers() {
+	public HashMap<String, OnlineUser> getUsers() {
 		return this.users;
 	}
 	
-	public void addUserToGroup(User user) {
+	public void setOnlineUser(String color, OnlineUser user) {
+		this.users.put(color, user);
+	}
+	
+	/*public void addUserToGroup(User user) {
 		if(!this.users.contains(user)) {
 			this.users.add(user);
 		}
-	}
+	}*/
 }
