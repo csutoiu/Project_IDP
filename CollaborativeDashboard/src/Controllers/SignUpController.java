@@ -9,6 +9,8 @@ import javax.swing.event.DocumentListener;
 
 import DataBase.DataBaseManager;
 import Models.User;
+import NIO.MessageHandler;
+import NIO.NetworkManager;
 import gui.CreateAccountFrame;
 import gui.DashboardFrame;
 import gui.LaunchFrame;
@@ -74,9 +76,9 @@ public class SignUpController implements ActionListener, DocumentListener  {
 				}
 			}
 		
-			//this.application.getUsers().add(new User(username, email, password));
+			NetworkManager.getInstance().notifyAllUsers(MessageHandler.getSendEventMessage(Constants.SIGN_UP_EVENT
+					, username, email, password));
 			DataBaseManager.addUserToDataBase(username, email, password);
-			//TO DO - add an observer
 			this.handlerForResult(Constants.SUCCESS);
 		}
 	}

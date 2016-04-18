@@ -221,8 +221,9 @@ public class DashboardFrame {
 		}
 	}
 	
+	/* ########################################### */
+	/* JList methods */
 	public void updateOnlineUsersList() {
-		System.out.println("Updata online list\n");
 		DefaultListModel<Object> listModel = new DefaultListModel<Object>();
 		for(String str : this.controller.getOnlineUsers()) {
 			listModel.addElement(str);

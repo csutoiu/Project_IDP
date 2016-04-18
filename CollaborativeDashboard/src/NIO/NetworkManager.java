@@ -30,10 +30,12 @@ public class NetworkManager {
     
     public void notifyAllUsers(String message) {
     	for(OnlineUser user : ApplicationController.getInstance().getOnlineUsers()) {
-    		if(!user.getUsername().equals(currentUser.getUsername())) {
-    			Thread clientSever = new Thread(new Client("localhost", user.getPort(), message));
-    			clientSever.start();
+    		if(currentUser != null && user.getUsername().equals(currentUser.getUsername())) {
+    			continue;
     		}
+    		System.out.println("Send message to users");
+    		Thread clientSever = new Thread(new Client("localhost", user.getPort(), message));
+    		clientSever.start();
     	}
     }
 }

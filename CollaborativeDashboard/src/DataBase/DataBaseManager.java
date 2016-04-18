@@ -76,11 +76,15 @@ public class DataBaseManager {
 		NodeList nList = document.getElementsByTagName("user");
 		for (int temp = 0; temp < nList.getLength(); temp++) {
             Element eElement = (Element)nList.item(temp);
-
-            User user = new User(eElement.getElementsByTagName("username").item(0).getTextContent(), 
-            					 eElement.getElementsByTagName("email").item(0).getTextContent(), 
-            					 eElement.getElementsByTagName("password").item(0).getTextContent());
-            ApplicationController.getInstance().getUsers().add(user);
+            String username = eElement.getElementsByTagName("username").item(0).getTextContent();
+            User user = ApplicationController.getInstance().getUser(username);
+            
+            if(user == null) {
+                user = new User(username, 
+   					 		eElement.getElementsByTagName("email").item(0).getTextContent(), 
+   					 		eElement.getElementsByTagName("password").item(0).getTextContent());
+                ApplicationController.getInstance().getUsers().add(user);
+            }
 		}
 	}
 	
@@ -92,10 +96,16 @@ public class DataBaseManager {
 		NodeList nList = document.getElementsByTagName("user");
 		for (int temp = 0; temp < nList.getLength(); temp++) {
             Element eElement = (Element) nList.item(temp);
-            OnlineUser onlineUser = new OnlineUser(eElement.getElementsByTagName("username").item(0).getTextContent(),
-            					 eElement.getElementsByTagName("ip").item(0).getTextContent(),
-            					 eElement.getElementsByTagName("port").item(0).getTextContent());
-            ApplicationController.getInstance().getOnlineUsers().add(onlineUser);
+            String username = eElement.getElementsByTagName("username").item(0).getTextContent();
+            OnlineUser onlineUser = ApplicationController.getInstance().getOnlineUser(username);
+            
+            
+            if(onlineUser == null) {
+            	 onlineUser = new OnlineUser(username,
+    					 		eElement.getElementsByTagName("ip").item(0).getTextContent(),
+    					 		eElement.getElementsByTagName("port").item(0).getTextContent());
+                ApplicationController.getInstance().getOnlineUsers().add(onlineUser);
+            }
 		}
 	}
 	

@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.swing.JOptionPane;
+import javax.xml.crypto.Data;
 
 import DataBase.DataBaseManager;
 import Models.Group;
@@ -63,10 +64,16 @@ public class DashboardController implements ActionListener {
     	this.currentUser = application.getOnlineUser(username);
     	this.myGroups = this.currentUser.getGroups();
     	
+    	try {
+			application.setInfo();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     	/* start server */
     	NetworkManager.getInstance().startServer(currentUser);
     	NetworkManager.getInstance().setCurrentUser(currentUser);
-    	NetworkManager.getInstance().notifyAllUsers(MessageHandler.getSendEventMessage(Constants.SIGN_IN_EVENT, this.currentUser, null));
+    	NetworkManager.getInstance().notifyAllUsers(MessageHandler.getSendEventMessage(Constants.SIGN_IN_EVENT, this.currentUser));
     }
     
     public ArrayList<Group> getMyGroups() {
@@ -85,10 +92,13 @@ public class DashboardController implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		if(e.getActionCommand().equals(Constants.LOGOUT)) {
 			DataBaseManager.removeOnlineUserToDataBase(this.currentUser);
-			this.removeUserToGroups();
+			this.removeUserToGroups(this.currentUser);
 			LaunchFrame frame = new LaunchFrame();
 			this.view.getFrame().setVisible(false);
 			frame.getFrame().setVisible(true);
+			
+			NetworkManager.getInstance().notifyAllUsers(MessageHandler.getSendEventMessage(Constants.LOGOUT_EVENT, 
+					this.currentUser.getUsername()));
 			
 		} else if(e.getActionCommand().equals(Constants.CREATE_GROUP)) {
 			String response = JOptionPane.showInputDialog
@@ -187,6 +197,9 @@ public class DashboardController implements ActionListener {
 			this.view.insertNewTab(groupChanged);
 			this.view.updateLegend(this.getUsersAndColors(group));
 			this.canvasOfGroups.get(groupChanged).setColor(ControlUtil.getNewColor(color));
+			
+			NetworkManager.getInstance().notifyAllUsers(MessageHandler.getSendEventMessage(Constants.ADD_USER_TO_GROUP_EVENT, 
+														this.currentUser.getUsername(), groupChanged, color));
 		}
 		
 		else if(e.getActionCommand().equals(Constants.LEAVE_GROUP)) {
@@ -231,11 +244,11 @@ public class DashboardController implements ActionListener {
 	}
 	
 	/* remove user to data base at logout */
-	public void removeUserToGroups() {
-		for(Group group : this.myGroups) {
+	public void removeUserToGroups(OnlineUser user) {
+		for(Group group : user.getGroups()) {
 			for (Iterator<Map.Entry<String,OnlineUser>> it = group.getUsers().entrySet().iterator(); it.hasNext();) {
 				 Map.Entry<String,OnlineUser> e = it.next();
-				 if (this.currentUser.equals(e.getValue())) {
+				 if (user.equals(e.getValue())) {
 					 it.remove();
 				 }
 			}
@@ -243,7 +256,7 @@ public class DashboardController implements ActionListener {
 				application.getGroups().remove(group);
 			}
 		}
-		DataBaseManager.removeUserFromGroups(this.currentUser.getUsername());
+		DataBaseManager.removeUserFromGroups(user.getUsername());
 	}
 	
 	/* Methods used by frame */
