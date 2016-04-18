@@ -47,4 +47,6 @@ public interface Constants {
 	public static int 	SIGN_UP_EVENT				= 2;
 	public static int 	LOGOUT_EVENT				= 3;
 	public static int 	ADD_USER_TO_GROUP_EVENT		= 4;
+	public static int 	CREATE_GROUP_EVENT			= 5;
+	public static int 	LEAVE_GROUP_EVENT			= 6;
 }

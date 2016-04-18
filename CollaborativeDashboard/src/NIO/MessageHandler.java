@@ -1,6 +1,8 @@
 package NIO;
 
 import java.io.StringReader;
+import java.util.Iterator;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -47,11 +49,24 @@ public class MessageHandler {
 					concat((String) args[0]).concat("\"}");
 			break;
 		
+		case Constants.CREATE_GROUP_EVENT:
+			message = "{\"method\":\"".concat("create_group").concat("\",\"username\":\"").
+			concat((String) args[0]).concat("\",\"groupname\":\"").
+			concat((String) args[1]).concat("\"}");
+			break;
+			
 		case Constants.ADD_USER_TO_GROUP_EVENT:
 			message = "{\"method\":\"".concat("add_uToG").concat("\",\"username\":\"").
 					concat((String) args[0]).concat("\",\"groupname\":\"").
 					concat((String) args[1]).concat("\",\"color\":\"").
 					concat((String) args[2]).concat("\"}");
+			System.out.println("Message to send is : "+ message);
+			break;
+			
+		case Constants.LEAVE_GROUP_EVENT:
+			message = "{\"method\":\"".concat("leave_group").concat("\",\"username\":\"").
+			concat((String) args[0]).concat("\",\"groupname\":\"").
+			concat((String) args[1]).concat("\"}");
 			System.out.println("Message to send is : "+ message);
 			break;
 
@@ -79,6 +94,7 @@ public class MessageHandler {
 			}
 			
 			System.out.println("New user: "+username);
+			
 		} else if(method.equals("sign_up")) {
 			String username = json.getString("username");
 			String email = json.getString("email");
@@ -88,6 +104,7 @@ public class MessageHandler {
 			if(!ApplicationController.getInstance().getUsers().contains(user)) {
 				ApplicationController.getInstance().getUsers().add(new User(username, email, password));
 			}
+			
 		} else if(method.equals("logout")) {
 			String username = json.getString("username");
 			
@@ -97,12 +114,30 @@ public class MessageHandler {
 				DashboardController.getInstance().getFrame().updateOnlineUsersList();
 			}
 			
-			//DashboardController.getInstance().removeUserToGroups(user);
-			//for(Group group : user.getGroups()) {
-				//DashboardController.getInstance().getFrame().removeUserToGroup(username, group.getGroupName());
-			//}
+			DashboardController.getInstance().removeUserToGroups(user);
+			for(Group group : user.getGroups()) {
+				if(group.getUsers().size() > 0) {
+					DashboardController.getInstance().getFrame().removeUserToGroup(username, group.getGroupName());
+				} else {
+					DashboardController.getInstance().getFrame().deleteGroup(group.getGroupName());
+				}
+			}
 			
-		} else if(method.equals("add_uToG")) {
+			
+			
+		} else if(method.equals("create_group")) {
+			String username = json.getString("username");
+			String groupname = json.getString("groupname");
+			
+			OnlineUser user = ApplicationController.getInstance().getOnlineUser(username);
+			Group newGroup = new Group(groupname);
+			user.getGroups().add(newGroup);
+			newGroup.setOnlineUser("red", user);
+			ApplicationController.getInstance().getGroups().add(newGroup);
+			DashboardController.getInstance().getFrame().addNewGroup(groupname);
+		}
+		
+		else if(method.equals("add_uToG")) {
 			String username = json.getString("username");
 			String groupname = json.getString("groupname");
 			String color = json.getString("color");
@@ -112,6 +147,36 @@ public class MessageHandler {
 			
 			System.out.println("------------ username " + user.getUsername() + "group " + group.getGroupName());
 			
+			user.getGroups().add(group);
+			group.setOnlineUser(color, user);
+			
+			DashboardController.getInstance().getFrame().addNewUserToGroup(username, groupname);
+		}
+		
+		else if(method.equals("leave_group")) {
+			String username = json.getString("username");
+			String groupname = json.getString("groupname");
+			
+			OnlineUser user = ApplicationController.getInstance().getOnlineUser(username);
+			Group group = ApplicationController.getInstance().getGroup(groupname);
+			
+			user.getGroups().remove(group);
+			
+			String key = "";
+			for (Iterator<Map.Entry<String,OnlineUser>> it = group.getUsers().entrySet().iterator(); it.hasNext();) {
+				 Map.Entry<String,OnlineUser> elem = it.next();
+				 if(user.equals(elem.getValue())) {
+					 key = elem.getKey();
+				 }
+			}
+			group.getUsers().remove(key);
+
+			if(group.getUsers().size() > 0) {
+				DashboardController.getInstance().getFrame().removeUserToGroup(username, groupname);
+			} else {
+				ApplicationController.getInstance().getGroups().remove(group);
+				DashboardController.getInstance().getFrame().deleteGroup(groupname);
+			}
 		}
 		
 	}

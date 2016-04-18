@@ -110,6 +110,8 @@ public class DataBaseManager {
 	}
 	
 	public static void setGroups() throws Exception {
+		System.out.println("Data base manager - get Groups");
+		
 		String xml = DataBaseManager.GET("?cmd=get_groups");
 		System.out.println(xml);
 		org.w3c.dom.Document document = DataBaseManager.loadXMLFromString(xml);

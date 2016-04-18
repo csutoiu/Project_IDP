@@ -65,6 +65,8 @@ public class DashboardController implements ActionListener {
     	this.myGroups = this.currentUser.getGroups();
     	
     	try {
+    		
+    		System.out.println("DashBoard set info with user " + this.currentUser.getUsername());
 			application.setInfo();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -123,6 +125,9 @@ public class DashboardController implements ActionListener {
 				this.view.insertNewTab(response);
 				this.view.updateLegend(this.getUsersAndColors(group));
 				this.getCanvasOfGroups().get(response).setColor(Color.red);
+				
+				NetworkManager.getInstance().notifyAllUsers(MessageHandler.getSendEventMessage
+						(Constants.CREATE_GROUP_EVENT, this.currentUser.getUsername(), response));
 			} else {
 				JOptionPane.showMessageDialog(this.view.getFrame(), message, null, JOptionPane.ERROR_MESSAGE);
 			}
@@ -171,6 +176,10 @@ public class DashboardController implements ActionListener {
 				if(this.currentUser.getGroups().contains(group)) {
 					this.getFrame().updateLegend(this.getUsersAndColors(group));
 				}
+				
+				NetworkManager.getInstance().notifyAllUsers(MessageHandler.getSendEventMessage(Constants.ADD_USER_TO_GROUP_EVENT, 
+						response, groupChanged, color));
+				
 			} else {
 				JOptionPane.showMessageDialog(this.view.getFrame(), message, null, JOptionPane.ERROR_MESSAGE);
 			}
@@ -223,7 +232,9 @@ public class DashboardController implements ActionListener {
 			DataBaseManager.removeUserFromGroup(this.currentUser.getUsername(), groupChanged);
 			this.view.removeGroupTab(groupChanged);
 			this.getCanvasOfGroups().remove(groupChanged);
-			
+		
+			NetworkManager.getInstance().notifyAllUsers(MessageHandler.getSendEventMessage
+					(Constants.LEAVE_GROUP_EVENT, this.currentUser.getUsername(), groupChanged));
 		}
 		
 		else if(e.getActionCommand().equals(Constants.SAVE_WORK)) {
