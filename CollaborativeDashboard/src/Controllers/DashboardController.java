@@ -3,6 +3,8 @@ package Controllers;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -14,6 +16,10 @@ import javax.swing.JOptionPane;
 import DataBase.DataBaseManager;
 import Models.Group;
 import Models.OnlineUser;
+import NIO.Client;
+import NIO.MessageHandler;
+import NIO.NetworkManager;
+import NIO.Server;
 import gui.DashboardFrame;
 import gui.LaunchFrame;
 import gui.MyCanvas;
@@ -57,7 +63,10 @@ public class DashboardController implements ActionListener {
     	this.currentUser = application.getOnlineUser(username);
     	this.myGroups = this.currentUser.getGroups();
     	
-    	this.view.initializeTabbedPane();
+    	/* start server */
+    	NetworkManager.getInstance().startServer(currentUser);
+    	NetworkManager.getInstance().setCurrentUser(currentUser);
+    	NetworkManager.getInstance().notifyAllUsers(MessageHandler.getSendEventMessage(Constants.SIGN_IN_EVENT, this.currentUser, null));
     }
     
     public ArrayList<Group> getMyGroups() {
@@ -102,7 +111,7 @@ public class DashboardController implements ActionListener {
 				DataBaseManager.addGroupToDataBase(response, this.currentUser.getUsername(), "red");
 				this.view.addNewGroup(response);
 				this.view.insertNewTab(response);
-				//this.view.addUserInLegend(this.view.getUsername(), Color.red);
+				this.view.updateLegend(this.getUsersAndColors(group));
 				this.getCanvasOfGroups().get(response).setColor(Color.red);
 			} else {
 				JOptionPane.showMessageDialog(this.view.getFrame(), message, null, JOptionPane.ERROR_MESSAGE);
@@ -115,35 +124,43 @@ public class DashboardController implements ActionListener {
 			if(response.isEmpty()) {
 				message = "Please enter a valid name.";
 			} else {
-				int i;
-				for(i = 0;i < application.getOnlineUsers().size();i++) {
-					if(response.equals(application.getOnlineUsers().get(i).getUsername())) {
-						break;
-					}
-				}
-				if(i == application.getOnlineUsers().size()) {
+				OnlineUser onlineUser = application.getOnlineUser(response);
+				if(onlineUser == null) {
 					message = "User is not online.";
 				} else {
-					for(int j = 0;j < this.getUsersOfGroup(groupChanged).length;j++) {
-						if(response.equals(this.getUsersOfGroup(groupChanged)[j])) {
-							message = "User already exists in group";
-							break;
-						}	
+					if(response.equals(this.currentUser.getUsername())) {
+						message = "Pick other user.";
+					} else {
+						for(int j = 0;j < this.getUsersOfGroup(groupChanged).length;j++) {
+							if(response.equals(this.getUsersOfGroup(groupChanged)[j])) {
+								message = "User already exists in group";
+								break;
+							}	
+						}
 					}
 				}
 			}
 			
 			if(message.isEmpty()) {
-				Group group = null;
-				for(int i = 0;i < application.getGroups().size();i++) {
-					if(groupChanged.equals(application.getGroups().get(i).getGroupName())) {
-						group = application.getGroups().get(i);
-						break;
-					}
+				Group group = application.getGroup(groupChanged);
+				OnlineUser user = application.getOnlineUser(response);
+				Object[] possibilities = {"red", "blue", "yellow", "pink", "green", "orange", "magenta", "gray"};
+				String color = (String)JOptionPane.showInputDialog(this.view.getFrame(),
+				                    "Pick a color:\n",
+				                    null, JOptionPane.PLAIN_MESSAGE,
+				                    null,
+				                    possibilities,
+				                    "red");
+				if(!group.setOnlineUser(color, user)) {
+					JOptionPane.showMessageDialog(this.view.getFrame(), "Pick other color.", null, JOptionPane.ERROR_MESSAGE);
+					return;
 				}
-				//group.getUsers().add(new User(response, null, null));
-				DataBaseManager.addNewUserToGroup(response, groupChanged);
+				user.getGroups().add(group);
+				DataBaseManager.addGroupToDataBase(groupChanged, response, color);
 				this.view.addNewUserToGroup(response, groupChanged);
+				if(this.currentUser.getGroups().contains(group)) {
+					this.getFrame().updateLegend(this.getUsersAndColors(group));
+				}
 			} else {
 				JOptionPane.showMessageDialog(this.view.getFrame(), message, null, JOptionPane.ERROR_MESSAGE);
 			}
@@ -159,45 +176,38 @@ public class DashboardController implements ActionListener {
 			                    "red");
 			
 			
-			Group group = null;
-			for(int i = 0;i < application.getGroups().size();i++) {
-				if(groupChanged.equals(application.getGroups().get(i).getGroupName())) {
-					group = application.getGroups().get(i);
-					break;
-				}
+			Group group = application.getGroup(groupChanged);
+			if(!group.setOnlineUser(color, currentUser)) {
+				JOptionPane.showMessageDialog(this.view.getFrame(), "Pick other color.", null, JOptionPane.ERROR_MESSAGE);
+				return;
 			}
-			/*User newUser = new User(this.view.getUsername(), null, null, color);
-			group.getUsers().add(newUser);
-			DataBaseManager.addNewUserToGroup(this.view.getUsername(), groupChanged);
-			this.view.addNewUserToGroup(this.view.getUsername(), groupChanged);
+			currentUser.getGroups().add(group);
+			DataBaseManager.addGroupToDataBase(groupChanged, this.currentUser.getUsername(), color);
+			this.view.addNewUserToGroup(this.currentUser.getUsername(), groupChanged);
 			this.view.insertNewTab(groupChanged);
-			this.view.addUserInLegend(this.view.getUsername(), ControlUtil.getNewColor(color));
-			this.canvasOfGroups.get(groupChanged).setColor(ControlUtil.getNewColor(color));*/
+			this.view.updateLegend(this.getUsersAndColors(group));
+			this.canvasOfGroups.get(groupChanged).setColor(ControlUtil.getNewColor(color));
 		}
 		
 		else if(e.getActionCommand().equals(Constants.LEAVE_GROUP)) {
-			Group group = null;
-			for(int i = 0;i < application.getGroups().size();i++) {
-				if(groupChanged.equals(application.getGroups().get(i).getGroupName())) {
-					group = application.getGroups().get(i);
-					break;
-				}
+			Group group = application.getGroup(groupChanged);
+			String key = "";
+			for (Iterator<Map.Entry<String,OnlineUser>> it = group.getUsers().entrySet().iterator(); it.hasNext();) {
+				 Map.Entry<String,OnlineUser> elem = it.next();
+				 if(this.currentUser.equals(elem.getValue())) {
+					 key = elem.getKey();
+				 }
 			}
-			for(int i = 0;i < group.getUsers().size();i++) {
-				if(group.getUsers().get(i).getUsername().equals(this.view.getUsername())) {
-					group.getUsers().remove(i);
-					break;
-				}
-			}
+			group.getUsers().remove(key);
+			this.currentUser.getGroups().remove(group);
+			
 			if(group.getUsers().size() > 0) {
-				DataBaseManager.removeUserToGroup(this.view.getUsername(), groupChanged);
-				this.view.removeUserToGroup(this.view.getUsername(), groupChanged);
+				this.view.removeUserToGroup(this.currentUser.getUsername(), groupChanged);
 			} else {
 				application.getGroups().remove(group);
-				DataBaseManager.deleteGroup(groupChanged);
 				this.view.deleteGroup(groupChanged);
 			}
-			
+			DataBaseManager.removeUserFromGroup(this.currentUser.getUsername(), groupChanged);
 			this.view.removeGroupTab(groupChanged);
 			this.getCanvasOfGroups().remove(groupChanged);
 			
@@ -268,5 +278,14 @@ public class DashboardController implements ActionListener {
 			 
 		}
 		return users;
+	}
+	
+	public HashMap<String, String> getUsersAndColors(Group group) {
+		HashMap<String, String> hash = new HashMap<String, String>();
+		for (Iterator<Map.Entry<String,OnlineUser>> it = group.getUsers().entrySet().iterator(); it.hasNext();) {
+			 Map.Entry<String,OnlineUser> e = it.next();
+			 hash.put(e.getKey(), e.getValue().getUsername());
+		}
+		return hash;
 	}
 }

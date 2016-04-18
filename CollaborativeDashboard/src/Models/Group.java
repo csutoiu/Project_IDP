@@ -24,8 +24,12 @@ public class Group {
 		return this.users;
 	}
 	
-	public void setOnlineUser(String color, OnlineUser user) {
+	public Boolean setOnlineUser(String color, OnlineUser user) {
+		OnlineUser check_user = this.users.get(color);
+		if(check_user != null)
+			return false;
 		this.users.put(color, user);
+		return true;
 	}
 	
 	/*public void addUserToGroup(User user) {

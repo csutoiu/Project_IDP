@@ -23,6 +23,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import Controllers.ApplicationController;
+import Controllers.ControlUtil;
 import Models.Group;
 import Models.OnlineUser;
 import Models.User;
@@ -31,6 +32,7 @@ public class DataBaseManager {
 	
 	private static String baseUrl = "http://idp.16mb.com/index.php";
 	private static String USER_AGENT = "Mozilla/5.0";
+	public int port = 11001;
 	
 	private static String GET(String additionalUrl) throws IOException {
 		
@@ -58,7 +60,7 @@ public class DataBaseManager {
 		return response.toString();
 	}
 	
-	private static org.w3c.dom.Document loadXMLFromString(String xml) throws Exception {
+	public static org.w3c.dom.Document loadXMLFromString(String xml) throws Exception {
 		
 	    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 	    DocumentBuilder builder = factory.newDocumentBuilder();
@@ -122,6 +124,7 @@ public class DataBaseManager {
             System.out.println(onlineUser.getUsername());
             onlineUser.getGroups().add(group);
             group.setOnlineUser(color, onlineUser);
+            System.err.println("AM adaugat " + group.getUsers().get(color).getUsername());
 		}
 	}
 
@@ -183,71 +186,20 @@ public class DataBaseManager {
 		}
 	}
 	
-	public static void addNewUserToGroup(String username, String groupName) {
-		
-		File inputFile = new File("groups.txt");
-		File tempFile = new File("groupsTemp.txt");
-
-		BufferedReader reader = null;
-		BufferedWriter writer = null;
+	public static void removeUserFromGroup(String username, String groupname) {
+		String cmd = "?cmd=remove_user_from_group&username=".concat(username).concat("&groupname=").concat(groupname);
 		try {
-			reader = new BufferedReader(new FileReader(inputFile));
-		    writer = new BufferedWriter(new FileWriter(tempFile));
-		    
-			String currentLine;
-		    while((currentLine = reader.readLine()) != null) {
-		    	String[] fields = currentLine.split(" ");
-			    if(fields[0].equals(groupName)) {
-			    	String line = fields[0];
-			    	for(int i = 1;i < fields.length;i++) {
-			    		line = line.concat(" ").concat(fields[i]);
-			    	}
-			    	line = line.concat(" ").concat(username);
-			    	currentLine = line;
-			    }
-			    writer.write(currentLine + System.getProperty("line.separator"));
-			}
-		    writer.close(); 
-			reader.close(); 
+			String xml = DataBaseManager.GET(cmd);
+			
+			org.w3c.dom.Document document = DataBaseManager.loadXMLFromString(xml);
+			document.getDocumentElement().normalize();
+			Element eElement = (Element) document.getElementsByTagName("response").item(0);
+            //String ip = eElement.getElementsByTagName("ip").item(0).getTextContent();
+            //String port = eElement.getElementsByTagName("port").item(0).getTextContent();
+           
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
-		tempFile.renameTo(inputFile);
-	}
-	
-	public static void removeUserToGroup(String username, String groupName) {
-		
-		File inputFile = new File("groups.txt");
-		File tempFile = new File("groupsTemp.txt");
-
-		BufferedReader reader = null;
-		BufferedWriter writer = null;
-		try {
-			reader = new BufferedReader(new FileReader(inputFile));
-		    writer = new BufferedWriter(new FileWriter(tempFile));
-		    
-			String currentLine;
-		    while((currentLine = reader.readLine()) != null) {
-		    	String[] fields = currentLine.split(" ");
-			    if(fields[0].equals(groupName)) {
-			    	String line = fields[0];
-			    	for(int i = 1;i < fields.length;i++) {
-			    		if(!fields[i].equals(username)) {
-			    			line = line.concat(" ").concat(fields[i]);
-			    		}
-			    	}
-			    	currentLine = line;
-			    }
-			    writer.write(currentLine + System.getProperty("line.separator"));
-			}
-		    writer.close(); 
-			reader.close(); 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		tempFile.renameTo(inputFile);
 	}
 	
 	public static void removeUserFromGroups(String username) {
@@ -264,31 +216,5 @@ public class DataBaseManager {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-	
-	public static void deleteGroup(String groupName) {
-		
-		File inputFile = new File("groups.txt");
-		File tempFile = new File("groupsTemp.txt");
-
-		BufferedReader reader = null;
-		BufferedWriter writer = null;
-		try {
-			reader = new BufferedReader(new FileReader(inputFile));
-		    writer = new BufferedWriter(new FileWriter(tempFile));
-		    
-			String currentLine;
-		    while((currentLine = reader.readLine()) != null) {
-		    	String[] fields = currentLine.split(" ");
-			    if(fields[0].equals(groupName)) continue;
-			    writer.write(currentLine + System.getProperty("line.separator"));
-			}
-		    writer.close(); 
-			reader.close(); 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		tempFile.renameTo(inputFile);
 	}
 }

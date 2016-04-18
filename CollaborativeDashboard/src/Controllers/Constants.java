@@ -41,4 +41,7 @@ public interface Constants {
 	public static String CHANGE_COLOR			= "Change Color";
 	
 	public static String SEND					= "Send";
+	
+	/* Event Constants */
+	public static int	SIGN_IN_EVENT				= 1;
 }

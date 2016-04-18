@@ -15,9 +15,13 @@ import Controllers.ControlUtil;
 import Controllers.DashboardController;
 import Controllers.PopClickListener;
 import Controllers.TabbedPaneController;
+import Models.OnlineUser;
 import Controllers.DrawTableController;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class DashboardFrame {
 	
@@ -52,6 +56,19 @@ public class DashboardFrame {
 	public DashboardFrame() {
 		initialize();
 		this.controller.setView(this);
+	}
+	
+	public JFrame getFrame() {
+		return this.frame;
+	}
+	
+	public void setUsername(String username) {
+		this.username.setText(username);
+		this.controller.setInfoUser(username);
+	}
+	
+	public String getUsername() {
+		return username.getText();
 	}
 
 	/**
@@ -134,7 +151,7 @@ public class DashboardFrame {
 		
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane.setBounds(300, 130, 700, 330);
-		tabbedPane.addChangeListener(new TabbedPaneController(tabbedPane));
+		tabbedPane.addChangeListener(new TabbedPaneController(tabbedPane, this.controller));
 		frame.getContentPane().add(tabbedPane);
 		
 		JLabel legendLabel = new JLabel("Legend");
@@ -144,8 +161,7 @@ public class DashboardFrame {
 		frame.getContentPane().add(legendLabel);
 		
 		this.makeUserLabels();
-		
-
+	
 		chatText = new JTextPane();
 		JScrollPane editorScrollPane = new JScrollPane(chatText);
 		editorScrollPane.setVerticalScrollBarPolicy(
@@ -205,20 +221,17 @@ public class DashboardFrame {
 		}
 	}
 	
-	public void updateUserLabels(String[] users) {
-		int i;
-		JLabel label;
-		for(i = 0;i < users.length;i++) {
-			label = this.userLabels.get(i);
-			label.setText(users[i]);
-			label.setVisible(true);
+	public void updateOnlineUsersList() {
+		System.out.println("Updata online list\n");
+		DefaultListModel<Object> listModel = new DefaultListModel<Object>();
+		for(String str : this.controller.getOnlineUsers()) {
+			listModel.addElement(str);
 		}
-		for(;i < this.userLabels.size();i++) {
-			label = this.userLabels.get(i);
-			label.setVisible(false);
-		}
+
+		onlineUsers.setModel(listModel);
 	}
 	
+	/* ########################################### */
 	/* JTree methods */
 	public void initializeGroups() {
 		groups.setRootVisible( false );
@@ -313,20 +326,9 @@ public class DashboardFrame {
 			}
 		}
 	}
+	/* ################################################# */
 	
 	/* JTabbedPane methods */
-	public void initializeTabbedPane() {
-		/*ArrayList<Models.Group> groups = this.controller.getMyGroups();
-		for(int i = 0; i < groups.size();i++) {
-			if(i == 0) {
-				String[] users = this.controller.getUsersOfGroup(groups.get(i).getGroupName());
-				this.updateUserLabels(users);
-			}
-			JComponent panel = this.makeDrawTable(groups.get(i).getGroupName());
-			tabbedPane.addTab(groups.get(i).getGroupName(), panel);
-		}*/
-	}
-	
 	public void insertNewTab(String groupName) {
 		JComponent panel = this.makeDrawTable(groupName);
 		tabbedPane.addTab(groupName, panel);
@@ -396,13 +398,33 @@ public class DashboardFrame {
         this.controller.getCanvasOfGroups().put(groupName, canvas);
         return panel;
 	}
+	/* ############################################## */
 	
-	public void addUserInLegend(String username, Color color) {
-		
-		
-		
+	/* ############################################## */
+	/* Legend methods */
+	public void clearLegend() {
+		for(int i = 0; i < this.userLabels.size();i++) {
+			this.userLabels.get(i).setVisible(false);
+		}
 	}
 	
+	public void updateLegend(HashMap<String, String> users) {
+		int i = 0;
+		for (Iterator<Map.Entry<String, String>> it = users.entrySet().iterator(); it.hasNext();) {
+			 Map.Entry<String, String> e = it.next();
+			 this.userLabels.get(i).setText(e.getValue());
+			 this.userLabels.get(i).setBackground(ControlUtil.getNewColor(e.getKey()));
+			 this.userLabels.get(i).setVisible(true);
+			 i++;
+		}
+		for(;i < this.userLabels.size();i++) {
+			this.userLabels.get(i).setVisible(false);
+		}
+	}
+	/* ########################################## */
+	
+	/* ########################################## */
+	/* Progress Bar methods */
 	public void showProgressBar() {
 		progressBar.setVisible(true);
 		int i = 0;
@@ -417,7 +439,10 @@ public class DashboardFrame {
 		}
 		progressBar.setVisible(false);
 	}
+	/* ############################################ */
 	
+	/* ############################################ */
+	/* Text Area Methods */
 	public void changeFont() {
 		Integer size = numbers[fontList.getSelectedIndex()];
 		Font oldFont = userText.getFont();
@@ -449,17 +474,4 @@ public class DashboardFrame {
         }
        
     }
-	
-	public JFrame getFrame() {
-		return this.frame;
-	}
-	
-	public void setUsername(String username) {
-		this.username.setText(username);
-		this.controller.setInfoUser(username);
-	}
-	
-	public String getUsername() {
-		return username.getText();
-	}
 }

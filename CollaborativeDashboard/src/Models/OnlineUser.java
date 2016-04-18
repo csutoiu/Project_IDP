@@ -25,6 +25,10 @@ public class OnlineUser {
 		return this.ip;
 	}
 	
+	public String getPort() {
+		return this.port;
+	}
+	
 	public ArrayList<Group> getGroups() {
 		return this.groups;
 	}

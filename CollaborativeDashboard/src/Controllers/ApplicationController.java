@@ -1,12 +1,6 @@
 package Controllers;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.util.ArrayList;
-
-import javax.xml.crypto.Data;
-
 import DataBase.DataBaseManager;
 import Models.Group;
 import Models.OnlineUser;
@@ -19,8 +13,8 @@ public class ApplicationController {
 	private ArrayList<User> users;
 	private ArrayList<OnlineUser> onlineUsers;
 	private ArrayList<Group> groups;
-
-    private ApplicationController() {
+	
+	private ApplicationController() {
     }
 
     public static ApplicationController getInstance() {
