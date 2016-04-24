@@ -49,4 +49,7 @@ public interface Constants {
 	public static int 	ADD_USER_TO_GROUP_EVENT		= 4;
 	public static int 	CREATE_GROUP_EVENT			= 5;
 	public static int 	LEAVE_GROUP_EVENT			= 6;
+	public static int 	ADD_SHAPE_EVENT				= 7;
+	public static int 	CANVAS_REQUEST_EVENT		= 8;
+	public static int 	CANVAS_RESPONSE_EVENT		= 9;
 }

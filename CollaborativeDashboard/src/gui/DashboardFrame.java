@@ -6,6 +6,7 @@ import javax.swing.*;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
+import javax.swing.text.TabExpander;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -15,6 +16,8 @@ import Controllers.ControlUtil;
 import Controllers.DashboardController;
 import Controllers.PopClickListener;
 import Controllers.TabbedPaneController;
+import Models.CanvasInfo;
+import Models.MyCanvas;
 import Models.OnlineUser;
 import Controllers.DrawTableController;
 
@@ -38,7 +41,7 @@ public class DashboardFrame {
 	
 	private JProgressBar progressBar;
 	
-	private JTabbedPane tabbedPane;
+	private static JTabbedPane tabbedPane;
 	
 	private JComboBox<Integer> fontList;
 	private JComboBox<String> colorList;
@@ -56,6 +59,7 @@ public class DashboardFrame {
 	public DashboardFrame() {
 		initialize();
 		this.controller.setView(this);
+		
 	}
 	
 	public JFrame getFrame() {
@@ -345,14 +349,18 @@ public class DashboardFrame {
 		for(int i = 0; i < count;i++) {
 			if(groupName.equals(tabbedPane.getTitleAt(i))) {
 				tabbedPane.remove(i);
+				break;
 			}
 		}
 	}
 	
 	public JComponent makeDrawTable(String groupName) {
 		
-		JPanel panel = new JPanel(false);
+		//JPanel panel = new JPanel(false);
+		JPanel panel = new JPanel(new BorderLayout());
 		panel.setLayout(null);
+		
+		System.out.println("Insert new tab");
 		
 		JButton square = new JButton("");
 		square.setBounds(10, 10, 25, 25);
@@ -382,12 +390,13 @@ public class DashboardFrame {
         canvas.setBounds(0, 40, 900, 300);
         canvas.setBackground(Color.white);
         
-        DrawTableController controller = new DrawTableController(canvas);
+        DrawTableController controller = new DrawTableController(canvas, this.controller);
         square.addActionListener(controller);
         circle.addActionListener(controller);
         line.addActionListener(controller);
         arrow.addActionListener(controller);
         canvas.addMouseListener(controller);
+        
         
         panel.add(square);
         panel.add(circle);
@@ -395,9 +404,19 @@ public class DashboardFrame {
         panel.add(arrow);
         
         panel.add(canvas);
-     
-        this.controller.getCanvasOfGroups().put(groupName, canvas);
+
+        /* ADD CANVAS TO DATA BASE */
+        this.controller.getCanvasOfGroups().add(new CanvasInfo(canvas, groupName));
+        
         return panel;
+	}
+	
+	public boolean checkCurrentCanvas(String groupName) {
+		if(tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()).equals(groupName)) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 	/* ############################################## */
 	

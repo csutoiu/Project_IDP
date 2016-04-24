@@ -35,4 +35,26 @@ public class ControlUtil {
 			return Color.black;
 		return null;
 	}
+	
+	public static String getStringColor(Color color) {
+		if(color.equals(Color.RED))
+			return "red";
+		if(color.equals(Color.BLUE))
+			return "blue";
+		if(color.equals(Color.PINK))
+			return "pink";
+		if(color.equals(Color.YELLOW))
+			return "yellow";
+		if(color.equals(Color.GREEN))
+			return "green";
+		if(color.equals(Color.ORANGE))
+			return "orange";
+		if(color.equals(Color.MAGENTA))
+			return "magenta";
+		if(color.equals(Color.GRAY))
+			return "gray";
+		if(color.equals(Color.BLACK))
+			return "black";
+		return null;
+	}
 }

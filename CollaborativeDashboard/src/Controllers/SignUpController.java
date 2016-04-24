@@ -87,6 +87,14 @@ public class SignUpController implements ActionListener, DocumentListener  {
 	public void handlerForResult(String result) {
 		if(result.equals(Constants.SUCCESS)) {
 			this.view.getFrame().setVisible(false);
+			
+	    	try {
+				application.setInfo();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 			DashboardFrame dashboard = new DashboardFrame();
 			dashboard.setUsername(username);
 			dashboard.getFrame().setVisible(true);

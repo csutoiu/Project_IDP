@@ -1,6 +1,10 @@
 package NIO;
 
+import java.util.Iterator;
+import java.util.Map;
+
 import Controllers.ApplicationController;
+import Models.Group;
 import Models.OnlineUser;
 
 public class NetworkManager {
@@ -37,5 +41,26 @@ public class NetworkManager {
     		Thread clientSever = new Thread(new Client("localhost", user.getPort(), message));
     		clientSever.start();
     	}
+    }
+    
+    public void notifyAllUsersOfGroup(String message, Group group) {
+		for (Iterator<Map.Entry<String,OnlineUser>> it = group.getUsers().entrySet().iterator(); it.hasNext();) {
+			 Map.Entry<String,OnlineUser> e = it.next();
+			 OnlineUser user = e.getValue();
+			 System.err.println("Send message to online user "+ user.getUsername());
+			 
+			 if(currentUser != null && currentUser.getUsername().equals(user.getUsername())) {
+				 continue;
+			 }
+			 
+	    	Thread clientSever = new Thread(new Client("localhost", user.getPort(), message));
+	    	clientSever.start();
+			 
+		}
+    }
+    
+    public void sendRequestToUser(String message, OnlineUser user) {
+    	Thread clientSever = new Thread(new Client("localhost", user.getPort(), message));
+    	clientSever.start();
     }
 }

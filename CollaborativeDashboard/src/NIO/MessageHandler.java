@@ -1,12 +1,15 @@
 package NIO;
 
+import java.awt.Color;
 import java.io.StringReader;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.naming.InterruptedNamingException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Element;
@@ -15,10 +18,13 @@ import org.xml.sax.InputSource;
 
 import Controllers.ApplicationController;
 import Controllers.Constants;
+import Controllers.ControlUtil;
 import Controllers.DashboardController;
 import DataBase.DataBaseManager;
+import Models.CanvasInfo;
 import Models.Group;
 import Models.OnlineUser;
+import Models.Shape;
 import Models.User;
 
 public class MessageHandler {
@@ -68,6 +74,33 @@ public class MessageHandler {
 			concat((String) args[0]).concat("\",\"groupname\":\"").
 			concat((String) args[1]).concat("\"}");
 			System.out.println("Message to send is : "+ message);
+			break;
+			
+		case Constants.ADD_SHAPE_EVENT:
+			message = "{\"method\":\"".concat("add_shape").concat("\",\"groupname\":\"").
+					concat((String) args[0]).concat("\",\"form\":\"").
+					concat((String) args[1]).concat("\",\"color\":\"").
+					concat((String) args[2]).concat("\",\"x\":\"").
+					concat((String) args[3]).concat("\",\"y\":\"").
+					concat((String) args[4]).concat("\"}");
+
+					System.out.println("Message to send is : "+ message);
+			break;
+		
+		case Constants.CANVAS_REQUEST_EVENT:
+			message = "{\"method\":\"".concat("canvas_request").concat("\",\"username\":\"").
+			concat((String) args[0]).concat("\",\"groupname\":\"").
+			concat((String) args[1]).concat("\"}");
+			
+			System.out.println("Message to send is " + message);
+			break;
+			
+		case Constants.CANVAS_RESPONSE_EVENT:
+			message = "{\"method\":\"".concat("canvas_response").concat("\",\"groupname\":\"").
+			concat((String) args[0]).concat("\",\"shapes\":").
+			concat((String) args[1]).concat("}");
+			
+			System.out.println("Message to send is " + message);
 			break;
 
 		default:
@@ -151,6 +184,12 @@ public class MessageHandler {
 			group.setOnlineUser(color, user);
 			
 			DashboardController.getInstance().getFrame().addNewUserToGroup(username, groupname);
+
+			if(DashboardController.getInstance().getCurrentUser().equals(user.getUsername())) {
+				//DashboardController.getInstance().joinToGroup(groupname, color);
+			}
+			
+			
 		}
 		
 		else if(method.equals("leave_group")) {
@@ -176,6 +215,55 @@ public class MessageHandler {
 			} else {
 				ApplicationController.getInstance().getGroups().remove(group);
 				DashboardController.getInstance().getFrame().deleteGroup(groupname);
+			}
+		}
+		
+		else if(method.equals("add_shape")) {
+			String groupname = json.getString("groupname");
+			String figure = json.getString("form");
+			
+			System.out.println("Figure to draw is " + figure);
+			Color color = ControlUtil.getNewColor(json.getString("color"));
+			int x = Integer.parseInt(json.getString("x"));
+			int y = Integer.parseInt(json.getString("y"));
+			
+			DashboardController.getInstance().updateCanvas(groupname, figure, color, x, y);
+		}
+		
+		else if(method.equals("canvas_request")) {
+			String groupname = json.getString("groupname");
+			String username = json.getString("username");
+			
+			OnlineUser user = ApplicationController.getInstance().getOnlineUser(username);
+			
+			System.out.println("Send to user" + user.getUsername());
+			CanvasInfo info = DashboardController.getInstance().getCanvasInfo(groupname);
+			String canvasShapes = info.getCanvasShapes();
+			
+			NetworkManager.getInstance().sendRequestToUser(MessageHandler.getSendEventMessage(Constants.CANVAS_RESPONSE_EVENT, 
+														 groupname, canvasShapes), user);
+			
+			System.out.println("Shapes are " + canvasShapes);
+		}
+		
+		else if(method.equals("canvas_response")) {
+			String groupname = json.getString("groupname");
+			System.out.println("Get canvas for group " + groupname);
+			CanvasInfo info = DashboardController.getInstance().getCanvasInfo(groupname);
+			JSONArray jsonArray = json.getJSONArray("shapes");
+			for (int i = 0; i < jsonArray.length(); i++) {
+		        JSONObject jsonObject = jsonArray.getJSONObject(i);
+		        System.out.println("Image " + jsonObject.toString());
+		        
+		        String figure = jsonObject.getString("form");
+				String color = jsonObject.getString("color");
+				String x = jsonObject.getString("x");
+				String y = jsonObject.getString("y");
+				
+				info.getCanvas().getShapes().add(new Shape(figure, ControlUtil.getNewColor(color), Integer.parseInt(x), 
+						Integer.parseInt(y)));
+				
+				info.getCanvas().repaint();
 			}
 		}
 		
