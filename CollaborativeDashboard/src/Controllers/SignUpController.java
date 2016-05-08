@@ -20,6 +20,7 @@ public class SignUpController implements ActionListener, DocumentListener  {
 	private static SignUpController me;
 	private ApplicationController application = ApplicationController.getInstance();
 	private CreateAccountFrame view;
+	private static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(SignInController.class);
 	
 	private String username, email, password, confirmPass;
 	
@@ -92,9 +93,10 @@ public class SignUpController implements ActionListener, DocumentListener  {
 				application.setInfo();
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.error(e);
 			}
 			
+	    	logger.info("New user was created with username " + username);
 			DashboardFrame dashboard = new DashboardFrame();
 			dashboard.setUsername(username);
 			dashboard.getFrame().setVisible(true);

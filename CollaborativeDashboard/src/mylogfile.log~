@@ -1,0 +1,17 @@
+Main.main(Main.java:20) INFO  Main  - Start applicatation
+Main.main(Main.java:20) INFO  Main  - Start applicatation
+Main.main(Main.java:20) INFO  Main  - Start applicatation
+DataBase.DataBaseManager.setOnlineUsers(DataBaseManager.java:112) DEBUG DataBase.DataBaseManager  - Online users:
+DataBase.DataBaseManager.setGroups(DataBaseManager.java:140) DEBUG DataBase.DataBaseManager  - Groups are:
+DataBase.DataBaseManager.setOnlineUsers(DataBaseManager.java:112) DEBUG DataBase.DataBaseManager  - Online users:
+DataBase.DataBaseManager.setOnlineUsers(DataBaseManager.java:112) DEBUG DataBase.DataBaseManager  - Online users:
+DataBase.DataBaseManager.setGroups(DataBaseManager.java:140) DEBUG DataBase.DataBaseManager  - Groups are:
+NIO.MessageHandler.getSendEventMessage(MessageHandler.java:94) DEBUG NIO.MessageHandler  - Message to send is {"method":"sign_up","username":"test","email":"test@idp.com","password":"pass"}
+DataBase.DataBaseManager.setGroups(DataBaseManager.java:140) DEBUG DataBase.DataBaseManager  - Groups are:
+NIO.MessageHandler.getSendEventMessage(MessageHandler.java:94) DEBUG NIO.MessageHandler  - Message to send is {"method":"sign_up","username":"tessst","email":"tessst@idp.com","password":"pass"}
+NIO.MessageHandler.getSendEventMessage(MessageHandler.java:94) DEBUG NIO.MessageHandler  - Message to send is {"method":"sign_in","username":"test","ip":"141.85.0.122","port":"5797"}
+Main$2.run(Main.java:56) INFO  Main  - User test was logged in.
+NIO.MessageHandler.getSendEventMessage(MessageHandler.java:94) DEBUG NIO.MessageHandler  - Message to send is {"method":"sign_in","username":"tessst","ip":"141.85.0.122","port":"5984"}
+Main$2.run(Main.java:56) INFO  Main  - User tessst was logged in.
+NIO.MessageHandler.getSendEventMessage(MessageHandler.java:94) DEBUG NIO.MessageHandler  - Message to send is {"method":"logout","username":"test"}
+NIO.MessageHandler.getSendEventMessage(MessageHandler.java:94) DEBUG NIO.MessageHandler  - Message to send is {"method":"logout","username":"tessst"}

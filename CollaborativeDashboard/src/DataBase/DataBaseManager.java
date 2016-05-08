@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -34,6 +35,8 @@ public class DataBaseManager {
 	private static String USER_AGENT = "Mozilla/5.0";
 	public int port = 11001;
 	
+	private static Logger logger = Logger.getLogger(DataBaseManager.class);
+	
 	private static String GET(String additionalUrl) throws IOException {
 		
 		URL url = new URL(baseUrl.concat(additionalUrl));
@@ -42,10 +45,6 @@ public class DataBaseManager {
 		con.setRequestMethod("GET");
 		//add request header
 		con.setRequestProperty("User-Agent", USER_AGENT);
-		
-		int responseCode = con.getResponseCode();
-		System.out.println("\nSending 'GET' request to URL : " + url);
-		System.out.println("Response Code : " + responseCode);
 		
 		BufferedReader in = new BufferedReader(
 		        new InputStreamReader(con.getInputStream()));
@@ -93,10 +92,12 @@ public class DataBaseManager {
 		org.w3c.dom.Document document = DataBaseManager.loadXMLFromString(xml);
 		document.getDocumentElement().normalize();
 		
+		String log = "Online users:";
 		NodeList nList = document.getElementsByTagName("user");
 		for (int temp = 0; temp < nList.getLength(); temp++) {
             Element eElement = (Element) nList.item(temp);
             String username = eElement.getElementsByTagName("username").item(0).getTextContent();
+            log = log.concat(" " + username);
             OnlineUser onlineUser = ApplicationController.getInstance().getOnlineUser(username);
             
             
@@ -107,23 +108,24 @@ public class DataBaseManager {
                 ApplicationController.getInstance().getOnlineUsers().add(onlineUser);
             }
 		}
+		
+		logger.debug(log);
 	}
 	
 	public static void setGroups() throws Exception {
-		System.out.println("Data base manager - get Groups");
-		
 		String xml = DataBaseManager.GET("?cmd=get_groups");
-		System.out.println(xml);
 		org.w3c.dom.Document document = DataBaseManager.loadXMLFromString(xml);
 		document.getDocumentElement().normalize();
 
+		String log = "Groups are:";
 		NodeList nList = document.getElementsByTagName("group");
 		for (int temp = 0; temp < nList.getLength(); temp++) {
             Element eElement = (Element) nList.item(temp);
             String groupname = eElement.getElementsByTagName("groupname").item(0).getTextContent();
             String user = eElement.getElementsByTagName("user").item(0).getTextContent();
             String color = eElement.getElementsByTagName("color").item(0).getTextContent();
-            System.out.println(groupname + " " + user + " " + color);
+            
+            log = log.concat(" " + groupname + " " + user + " " + color);
             
             Group group = ApplicationController.getInstance().getGroup(groupname);
             if(group == null) {
@@ -131,13 +133,11 @@ public class DataBaseManager {
             	ApplicationController.getInstance().getGroups().add(group);
             }
             
-            System.out.println(group.getGroupName());
             OnlineUser onlineUser = ApplicationController.getInstance().getOnlineUser(user);
-            System.out.println(onlineUser.getUsername());
             onlineUser.getGroups().add(group);
             group.setOnlineUser(color, onlineUser);
-            System.err.println("AM adaugat " + group.getUsers().get(color).getUsername());
 		}
+		logger.debug(log);
 	}
 
 	public static void addUserToDataBase(String username, String email, String password) {
@@ -145,7 +145,7 @@ public class DataBaseManager {
 		try {
 			String xml = DataBaseManager.GET(cmd);
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error(e);
 		}
 		ApplicationController.getInstance().getUsers().add(new User(username, email, password));
 		DataBaseManager.addOnlineUserToDataBase(username);
@@ -163,7 +163,7 @@ public class DataBaseManager {
             
 			ApplicationController.getInstance().getOnlineUsers().add(new OnlineUser(username, ip, port));
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error(e);
 		}
 	}
 	
@@ -179,7 +179,7 @@ public class DataBaseManager {
             
 			ApplicationController.getInstance().getOnlineUsers().remove(onlineUser);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error(e);
 		}
 	}
 	
@@ -194,7 +194,7 @@ public class DataBaseManager {
             //String port = eElement.getElementsByTagName("port").item(0).getTextContent();
            
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error(e);
 		}
 	}
 	
@@ -210,7 +210,7 @@ public class DataBaseManager {
             //String port = eElement.getElementsByTagName("port").item(0).getTextContent();
            
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error(e);
 		}
 	}
 	
@@ -218,7 +218,6 @@ public class DataBaseManager {
 		String cmd = "?cmd=remove_user_from_groups&username=".concat(username);
 		try {
 			String xml = DataBaseManager.GET(cmd);
-			System.out.println(xml);
 			org.w3c.dom.Document document = DataBaseManager.loadXMLFromString(xml);
 			document.getDocumentElement().normalize();
 			Element eElement = (Element) document.getElementsByTagName("response").item(0);
@@ -226,7 +225,7 @@ public class DataBaseManager {
             //String port = eElement.getElementsByTagName("port").item(0).getTextContent();
             
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error(e);
 		}
 	}
 }

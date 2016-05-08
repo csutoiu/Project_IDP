@@ -1,0 +1,9 @@
+Main.main(Main.java:22) INFO  Main  - Start app
+Main.main(Main.java:20) INFO  Main  - Start applicatation
+Main.main(Main.java:20) INFO  Main  - Start applicatation
+Controllers.SignUpController.handlerForResult(SignUpController.java:99) INFO  Controllers.SignInController  - New user was created with username ana
+Controllers.SignUpController.handlerForResult(SignUpController.java:99) INFO  Controllers.SignInController  - New user was created with username mara
+Main.main(Main.java:20) INFO  Main  - Start applicatation
+Main.main(Main.java:20) INFO  Main  - Start applicatation
+Controllers.SignInController.handlerForResult(SignInController.java:90) INFO  Controllers.SignInController  - User mara was logged in.
+Controllers.SignInController.handlerForResult(SignInController.java:90) INFO  Controllers.SignInController  - User ana was logged in.

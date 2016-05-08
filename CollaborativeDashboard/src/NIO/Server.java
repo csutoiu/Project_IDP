@@ -8,14 +8,15 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.HashMap;
 import java.util.Iterator;
+
+import org.apache.log4j.Logger;
 
 public class Server implements Runnable{
 	
 	private ServerSocketChannel serverchannel;
 	private Selector selector ;
-	//private HashMap<SocketChannel,ByteBuffer> queuedWrites = new HashMap<SocketChannel,ByteBuffer>() ;
+	private Logger logger = Logger.getLogger(Server.class);
 	
 	private String ip;
 	private int port;
@@ -50,8 +51,6 @@ public class Server implements Runnable{
 						ServerSocketChannel ssc = (ServerSocketChannel)key.channel();
 				        SocketChannel sc = ssc.accept();
 				        sc.configureBlocking( false );
-
-				        System.out.println("Server accept");
 				        sc.register(selector, SelectionKey.OP_READ );
 						
 					} else if(key.isReadable()) {
@@ -78,11 +77,12 @@ public class Server implements Runnable{
 							continue;
 						}
 						
-						System.out.println("Read :" + numread + " " + new String(readBuffer.array()));
+						logger.debug("Received message: " + new String(readBuffer.array()));
+
 						try {
 							MessageHandler.getReceiveEventMessage(new String(readBuffer.array()));
 						} catch (Exception e) {
-							e.printStackTrace();
+							logger.error(e);
 						}
 						
 						readBuffer.flip();
@@ -108,7 +108,7 @@ public class Server implements Runnable{
 				}
 			}
 		} catch(IOException e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 	}
 }

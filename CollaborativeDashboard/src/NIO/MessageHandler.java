@@ -1,26 +1,19 @@
 package NIO;
 
 import java.awt.Color;
-import java.io.StringReader;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.naming.InterruptedNamingException;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 import Controllers.ApplicationController;
 import Controllers.Constants;
 import Controllers.ControlUtil;
 import Controllers.DashboardController;
-import DataBase.DataBaseManager;
+
 import Models.CanvasInfo;
 import Models.Group;
 import Models.OnlineUser;
@@ -28,6 +21,7 @@ import Models.Shape;
 import Models.User;
 
 public class MessageHandler {
+	private static Logger logger = Logger.getLogger(MessageHandler.class);
 	
 	public static String getSendEventMessage(int eventKey, Object...args) {
 		String message = "";
@@ -39,7 +33,6 @@ public class MessageHandler {
 					concat(user.getUsername()).concat("\",\"ip\":\"").
 					concat(user.getIp()).concat("\",\"port\":\"").
 					concat(user.getPort()).concat("\"}");
-			System.out.println("Message to send is : "+message);
 			break;
 		
 		case Constants.SIGN_UP_EVENT:
@@ -47,7 +40,6 @@ public class MessageHandler {
 					concat((String) args[0]).concat("\",\"email\":\"").
 					concat((String) args[1]).concat("\",\"password\":\"").
 					concat((String) args[2]).concat("\"}");
-			System.out.println("Message to send is : "+message);
 			break;
 		
 		case Constants.LOGOUT_EVENT:
@@ -57,8 +49,8 @@ public class MessageHandler {
 		
 		case Constants.CREATE_GROUP_EVENT:
 			message = "{\"method\":\"".concat("create_group").concat("\",\"username\":\"").
-			concat((String) args[0]).concat("\",\"groupname\":\"").
-			concat((String) args[1]).concat("\"}");
+					concat((String) args[0]).concat("\",\"groupname\":\"").
+					concat((String) args[1]).concat("\"}");
 			break;
 			
 		case Constants.ADD_USER_TO_GROUP_EVENT:
@@ -66,14 +58,12 @@ public class MessageHandler {
 					concat((String) args[0]).concat("\",\"groupname\":\"").
 					concat((String) args[1]).concat("\",\"color\":\"").
 					concat((String) args[2]).concat("\"}");
-			System.out.println("Message to send is : "+ message);
 			break;
 			
 		case Constants.LEAVE_GROUP_EVENT:
 			message = "{\"method\":\"".concat("leave_group").concat("\",\"username\":\"").
-			concat((String) args[0]).concat("\",\"groupname\":\"").
-			concat((String) args[1]).concat("\"}");
-			System.out.println("Message to send is : "+ message);
+					concat((String) args[0]).concat("\",\"groupname\":\"").
+					concat((String) args[1]).concat("\"}");
 			break;
 			
 		case Constants.ADD_SHAPE_EVENT:
@@ -83,35 +73,31 @@ public class MessageHandler {
 					concat((String) args[2]).concat("\",\"x\":\"").
 					concat((String) args[3]).concat("\",\"y\":\"").
 					concat((String) args[4]).concat("\"}");
-
-					System.out.println("Message to send is : "+ message);
 			break;
 		
 		case Constants.CANVAS_REQUEST_EVENT:
 			message = "{\"method\":\"".concat("canvas_request").concat("\",\"username\":\"").
-			concat((String) args[0]).concat("\",\"groupname\":\"").
-			concat((String) args[1]).concat("\"}");
-			
-			System.out.println("Message to send is " + message);
+					concat((String) args[0]).concat("\",\"groupname\":\"").
+					concat((String) args[1]).concat("\"}");
 			break;
 			
 		case Constants.CANVAS_RESPONSE_EVENT:
 			message = "{\"method\":\"".concat("canvas_response").concat("\",\"groupname\":\"").
-			concat((String) args[0]).concat("\",\"shapes\":").
-			concat((String) args[1]).concat("}");
-			
-			System.out.println("Message to send is " + message);
+					concat((String) args[0]).concat("\",\"shapes\":").
+					concat((String) args[1]).concat("}");
 			break;
 
 		default:
 			break;
 		}
 		
+		logger.debug("Message to send is " + message);
 		return message;
 	}
 	
 	public static void getReceiveEventMessage(String message) throws JSONException {
 		JSONObject json = new JSONObject(message);
+		logger.debug("Message received is " + message);
 		
 		String method = json.getString("method");
 		if(method.equals("sign_in")) {
@@ -125,8 +111,6 @@ public class MessageHandler {
 				ApplicationController.getInstance().getOnlineUsers().add(user);
 				DashboardController.getInstance().getFrame().updateOnlineUsersList();
 			}
-			
-			System.out.println("New user: "+username);
 			
 		} else if(method.equals("sign_up")) {
 			String username = json.getString("username");
@@ -155,9 +139,7 @@ public class MessageHandler {
 					DashboardController.getInstance().getFrame().deleteGroup(group.getGroupName());
 				}
 			}
-			
-			
-			
+
 		} else if(method.equals("create_group")) {
 			String username = json.getString("username");
 			String groupname = json.getString("groupname");
@@ -177,8 +159,6 @@ public class MessageHandler {
 			
 			OnlineUser user = ApplicationController.getInstance().getOnlineUser(username);
 			Group group = ApplicationController.getInstance().getGroup(groupname);
-			
-			System.out.println("------------ username " + user.getUsername() + "group " + group.getGroupName());
 			
 			user.getGroups().add(group);
 			group.setOnlineUser(color, user);
@@ -221,8 +201,6 @@ public class MessageHandler {
 		else if(method.equals("add_shape")) {
 			String groupname = json.getString("groupname");
 			String figure = json.getString("form");
-			
-			System.out.println("Figure to draw is " + figure);
 			Color color = ControlUtil.getNewColor(json.getString("color"));
 			int x = Integer.parseInt(json.getString("x"));
 			int y = Integer.parseInt(json.getString("y"));
@@ -235,25 +213,19 @@ public class MessageHandler {
 			String username = json.getString("username");
 			
 			OnlineUser user = ApplicationController.getInstance().getOnlineUser(username);
-			
-			System.out.println("Send to user" + user.getUsername());
 			CanvasInfo info = DashboardController.getInstance().getCanvasInfo(groupname);
 			String canvasShapes = info.getCanvasShapes();
 			
 			NetworkManager.getInstance().sendRequestToUser(MessageHandler.getSendEventMessage(Constants.CANVAS_RESPONSE_EVENT, 
 														 groupname, canvasShapes), user);
-			
-			System.out.println("Shapes are " + canvasShapes);
 		}
 		
 		else if(method.equals("canvas_response")) {
 			String groupname = json.getString("groupname");
-			System.out.println("Get canvas for group " + groupname);
 			CanvasInfo info = DashboardController.getInstance().getCanvasInfo(groupname);
 			JSONArray jsonArray = json.getJSONArray("shapes");
 			for (int i = 0; i < jsonArray.length(); i++) {
 		        JSONObject jsonObject = jsonArray.getJSONObject(i);
-		        System.out.println("Image " + jsonObject.toString());
 		        
 		        String figure = jsonObject.getString("form");
 				String color = jsonObject.getString("color");
@@ -266,7 +238,5 @@ public class MessageHandler {
 				info.getCanvas().repaint();
 			}
 		}
-		
 	}
-
 }

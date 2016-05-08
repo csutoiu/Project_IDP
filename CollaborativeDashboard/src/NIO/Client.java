@@ -10,12 +10,15 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
+
 public class Client implements Runnable{
 	
 	private SocketChannel clientChannel;
 	private Selector selector;
 	private ByteBuffer readBuf = ByteBuffer.allocate(8192);
 	private String message;
+	private static Logger logger = Logger.getLogger(Client.class);
 	
 	private String ip;
 	private int port;
@@ -65,20 +68,19 @@ public class Client implements Runnable{
 				}
 			}
 		} catch(IOException e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 	}
 
 	private void finishConnection(SelectionKey key) throws IOException {
-		System.out.println("Finish connection");
 		clientChannel.finishConnect();
 		key.interestOps(SelectionKey.OP_WRITE);
 	}
 	
 	private void write(SelectionKey key) throws IOException {
 		String toWrite = this.message;
-		System.out.println("writing :" + toWrite);
-		
+		logger.debug("Send message: " + toWrite);
+		 
 		if(toWrite != null) {
 			ByteBuffer b;
 			b = ByteBuffer.wrap(toWrite.getBytes());
@@ -91,32 +93,5 @@ public class Client implements Runnable{
 					break ;
 			}	
 		}
-		
-		//key.interestOps(SelectionKey.OP_READ) ;
 	}
-	
-	/*public void read(SelectionKey key) throws IOException {
-		
-		readBuf.clear() ;
-		
-		while (true) {
-            // readBuffer.clear();
-
-            int numread = clientChannel.read( readBuf );
-
-            if (numread <=0) {
-              break;
-            }
-            
-           
-          }
-		
-		   System.out.println("Read Echo from server:" + new String(readBuf.array())) ;
-		   
-		
-		
-		key.interestOps(SelectionKey.OP_WRITE) ;
-		
-	}*/
-	
 }

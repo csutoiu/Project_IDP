@@ -5,6 +5,8 @@ import java.awt.Graphics;
 import java.util.ArrayList;
 import javax.swing.JPanel;
 
+import org.apache.log4j.Logger;
+
 import Controllers.Constants;
 
 
@@ -13,6 +15,7 @@ public class MyCanvas extends JPanel {
 	private static final long serialVersionUID = 1L;
 	private Color color;
 	private String figure;
+	private static Logger logger = Logger.getLogger(MyCanvas.class);
 	
 	private ArrayList<Shape> shapes;
 
@@ -57,7 +60,7 @@ public class MyCanvas extends JPanel {
 			int x = shape.getX();
 			int y = shape.getY();
 
-			System.out.println("Shape " + figure + x + y);
+			logger.debug("Draw shape: figure - " + figure + ", x - " + x + ", y - " + y);
 			
 			if(figure.equals(Constants.SQUARE)) {
 				g.drawRect(x, y, Constants.FIGURE_SIZE, Constants.FIGURE_SIZE);

@@ -11,6 +11,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 
+import org.apache.log4j.Logger;
+
 import Controllers.Constants;
 import Controllers.ControlUtil;
 import Controllers.DashboardController;
@@ -29,6 +31,7 @@ import java.util.Map;
 public class DashboardFrame {
 	
 	private DashboardController controller = DashboardController.getInstance();
+	private static Logger logger =  Logger.getLogger(DashboardFrame.class);
 	
 	private JFrame frame;
 	private JLabel username;
@@ -360,7 +363,6 @@ public class DashboardFrame {
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.setLayout(null);
 		
-		System.out.println("Insert new tab");
 		
 		JButton square = new JButton("");
 		square.setBounds(10, 10, 25, 25);
@@ -456,6 +458,7 @@ public class DashboardFrame {
 				i++;
 			}
 		} catch (Exception e) {
+			logger.error(e);
 		}
 		progressBar.setVisible(false);
 	}
@@ -490,7 +493,7 @@ public class DashboardFrame {
         try {
             doc.insertString(doc.getLength(), string, aset );
         } catch(Exception e) { 
-        	System.out.println(e); 
+        	logger.error(e); 
         }
        
     }

@@ -1,8 +1,4 @@
 package Models;
-import java.awt.Color;
-import java.util.ArrayList;
-
-import Controllers.ControlUtil;
 
 public class User {
 	

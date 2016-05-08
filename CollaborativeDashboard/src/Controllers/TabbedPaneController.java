@@ -1,8 +1,5 @@
 package Controllers;
 
-import java.awt.Canvas;
-import java.awt.image.BufferedImage;
-import java.sql.Savepoint;
 import java.util.HashMap;
 
 import javax.swing.JTabbedPane;
@@ -11,7 +8,6 @@ import javax.swing.event.ChangeListener;
 
 import Models.CanvasInfo;
 import Models.Group;
-import gui.GUIHelper;
 
 public class TabbedPaneController implements ChangeListener {
 	
@@ -42,7 +38,6 @@ public class TabbedPaneController implements ChangeListener {
 		}
 		
 		controller.setSelectedIndexTab(tabbedPane.getSelectedIndex());
-		System.out.println("Actual index is " + controller.getSelectedIndexTab());
 	}
 
 }

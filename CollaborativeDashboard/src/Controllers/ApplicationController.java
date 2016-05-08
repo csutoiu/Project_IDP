@@ -30,8 +30,6 @@ public class ApplicationController {
     public void setInfo() throws Exception {
     	DataBaseManager.setUsers();
     	DataBaseManager.setOnlineUsers();
-    	System.out.println("set info");
-    	
     	DataBaseManager.setGroups();
     }
     

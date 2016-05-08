@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.apache.log4j.Logger;
+
 import DataBase.DataBaseManager;
 import Models.OnlineUser;
 import Models.User;
@@ -19,6 +21,7 @@ public class SignInController implements ActionListener, DocumentListener {
 	private static SignInController me;
 	private ApplicationController application = ApplicationController.getInstance();
 	private LaunchFrame view;
+	private static Logger logger = Logger.getLogger(SignInController.class);
 	
 	private String username, password;
 	
@@ -81,9 +84,10 @@ public class SignInController implements ActionListener, DocumentListener {
 				application.setInfo();
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.error(e);
 			}
 			
+	    	logger.info("User " + username + " was logged in.");
 			DashboardFrame dashboard = new DashboardFrame();
 			dashboard.setUsername(username);
 			dashboard.getFrame().setVisible(true);

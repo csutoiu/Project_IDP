@@ -1,8 +1,6 @@
 package Models;
 
-import java.awt.image.BufferedImage;
-import java.util.ResourceBundle.Control;
-
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -11,9 +9,11 @@ import Controllers.ControlUtil;
 
 public class CanvasInfo {
 
-	MyCanvas canvas;
-	String groupName;
-	String image;
+	private MyCanvas canvas;
+	private String groupName;
+	private String image;
+	private static Logger logger = Logger.getLogger(CanvasInfo.class);
+	
 	
 	public CanvasInfo (MyCanvas canvas, String groupName) {
 		this.canvas = canvas;
@@ -59,14 +59,14 @@ public class CanvasInfo {
 			JSONArray jsonArray = json.getJSONArray("images");
 			for (int i = 0; i < jsonArray.length(); i++) {
 		        JSONObject jsonObject = jsonArray.getJSONObject(i);
-		        System.out.println("Image " + jsonObject.toString());
 		        
 		        String figure = jsonObject.getString("figure");
 				String color = jsonObject.getString("color");
 				String x = jsonObject.getString("x");
 				String y = jsonObject.getString("y");
 				
-				System.out.println("figure " + figure + " color " + color + " " + x + " " + y);
+				logger.debug("Load shape in canvas of group " + groupName + ": figure - " + figure + 
+						", color - " + color + ", x - " + x + ", y - " + y);
 				
 				//this.canvas.drawFigure(figure, ControlUtil.getNewColor(color), Integer.parseInt(x), Integer.parseInt(y));
 		    }

@@ -16,6 +16,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 import javax.xml.crypto.Data;
 
+import org.apache.log4j.Logger;
+
 import DataBase.DataBaseManager;
 import Models.CanvasInfo;
 import Models.Group;
@@ -34,6 +36,7 @@ public class DashboardController implements ActionListener {
 	private static DashboardController me;
 	private ApplicationController application = ApplicationController.getInstance();
 	private DashboardFrame view;
+	private static Logger logger = Logger.getLogger(DashboardController.class);
 	
 	private OnlineUser currentUser;
 	private ArrayList<Group> myGroups;
@@ -83,6 +86,7 @@ public class DashboardController implements ActionListener {
     
     public void setInfoUser(String username) {
     	this.currentUser = application.getOnlineUser(username);
+    	logger.debug("Current user is " + this.currentUser.getUsername());
     	this.myGroups = this.currentUser.getGroups();
 
     	/* start server */
@@ -324,7 +328,6 @@ public class DashboardController implements ActionListener {
 		CanvasInfo info = this.getCanvasInfo(groupName);
 		info.getCanvas().getShapes().add(new Shape(form, color, x, y));
 		if(this.view.checkCurrentCanvas(groupName)) {
-			System.out.println("Need repaint");
 			info.getCanvas().repaint();
 		}
 	}

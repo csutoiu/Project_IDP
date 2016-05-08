@@ -1,17 +1,13 @@
 package gui;
 
-import java.awt.Canvas;
-import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Toolkit;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 
-import javax.imageio.ImageIO;
+import org.apache.log4j.Logger;
 
 public class GUIHelper {
 
+	private static Logger logger = Logger.getLogger(GUIHelper.class);
 	/**
 	 * Get image localized at the "path"
 	 */
@@ -22,7 +18,7 @@ public class GUIHelper {
 			try {
 				throw new Exception( "ERR cannot find resource: " + path );
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error(e);
 			}
 		image = Toolkit.getDefaultToolkit().getImage(url);
 		return image;
