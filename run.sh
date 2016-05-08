@@ -21,8 +21,6 @@ do
 done
 cmd="$cmd java -cp .:../../* Main 0"
 
-echo $cmd
-
 eval $cmd
 
 

@@ -1,5 +1,8 @@
 import java.awt.EventQueue;
 import org.apache.log4j.*;
+import org.junit.runner.JUnitCore;
+import org.junit.runner.Result;
+import org.junit.runner.notification.Failure;
 
 import Controllers.ApplicationController;
 import Controllers.Constants;
@@ -26,6 +29,12 @@ public class Main {
 			e.printStackTrace();
 		}
 
+		Result result = JUnitCore.runClasses(TestDataBase.class);
+	    for (Failure failure : result.getFailures()) {
+	    	logger.warn(failure.toString());
+	    }
+	    logger.warn(result.wasSuccessful());
+		
 		if(args.length == 0 || Integer.parseInt(args[0]) == 0) {
 		
 			EventQueue.invokeLater(new Runnable() {

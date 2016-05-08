@@ -8,6 +8,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.apache.log4j.Logger;
+import org.junit.runner.JUnitCore;
+import org.junit.runner.Result;
 
 import DataBase.DataBaseManager;
 import Models.OnlineUser;
@@ -87,6 +89,7 @@ public class SignInController implements ActionListener, DocumentListener {
 			}
 			
 	    	logger.info("User " + username + " was logged in.");
+	    	
 			DashboardFrame dashboard = new DashboardFrame();
 			dashboard.setUsername(username);
 			dashboard.getFrame().setVisible(true);
