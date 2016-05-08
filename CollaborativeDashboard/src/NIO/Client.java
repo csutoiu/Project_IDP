@@ -6,8 +6,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
@@ -16,7 +14,6 @@ public class Client implements Runnable{
 	
 	private SocketChannel clientChannel;
 	private Selector selector;
-	private ByteBuffer readBuf = ByteBuffer.allocate(8192);
 	private String message;
 	private static Logger logger = Logger.getLogger(Client.class);
 	

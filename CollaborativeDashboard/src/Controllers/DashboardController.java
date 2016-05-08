@@ -3,31 +3,25 @@ package Controllers;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.net.ServerSocket;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.swing.JOptionPane;
-import javax.swing.JTabbedPane;
-import javax.xml.crypto.Data;
 
 import org.apache.log4j.Logger;
 
 import DataBase.DataBaseManager;
-import Models.CanvasInfo;
+import Models.GroupInfo;
 import Models.Group;
 import Models.MyCanvas;
 import Models.OnlineUser;
 import Models.Shape;
-import NIO.Client;
+import Models.UserText;
 import NIO.MessageHandler;
 import NIO.NetworkManager;
-import NIO.Server;
 import gui.DashboardFrame;
 import gui.LaunchFrame;
 
@@ -42,12 +36,7 @@ public class DashboardController implements ActionListener {
 	private ArrayList<Group> myGroups;
 	
 	private String groupChanged;
-	
-	
-	/*private HashMap<String, MyCanvas> canvasOfGroups;
-	private ArrayList<BufferedImage> canvasImages;*/
-	
-	private ArrayList<CanvasInfo> canvasOfGroups;
+	private ArrayList<GroupInfo> canvasOfGroups;
 	
 	private int selectedIndexTab;
 	
@@ -58,10 +47,7 @@ public class DashboardController implements ActionListener {
         if (me == null) {
             me = new DashboardController();
             me.myGroups = new ArrayList<Group>();
-            //me.canvasOfGroups = new HashMap<String, MyCanvas>();
-           // me.canvasImages = new ArrayList<BufferedImage>();
-            
-            me.canvasOfGroups = new ArrayList<CanvasInfo>();
+            me.canvasOfGroups = new ArrayList<GroupInfo>();
             me.selectedIndexTab = -1;
         }
 
@@ -103,15 +89,7 @@ public class DashboardController implements ActionListener {
     	this.groupChanged = groupChanged;
     }
 
-    /*public HashMap<String, MyCanvas> getCanvasOfGroups() {
-    	return this.canvasOfGroups;
-    }
-    
-    public ArrayList<BufferedImage> getCanvasImages() {
-    	return this.canvasImages;
-    }*/
-    
-    public ArrayList<CanvasInfo> getCanvasOfGroups() {
+    public ArrayList<GroupInfo> getCanvasOfGroups() {
     	return this.canvasOfGroups;
     }
     
@@ -278,6 +256,20 @@ public class DashboardController implements ActionListener {
 		
 		else if(e.getActionCommand().equals(Constants.SEND)) {
 			this.view.addTextToChat();
+			
+			String text = this.view.getUserText().getText();
+			String color = ControlUtil.getStringColor(this.view.getUserText().getForeground());
+			String size = String.valueOf(this.view.getUserText().getFont().getSize());
+			
+			String groupname = this.view.getTabbedPane().getTitleAt(this.selectedIndexTab);
+			Group group = application.getGroup(groupname);
+			GroupInfo groupInfo = this.getGroupInfo(groupname);
+			
+			groupInfo.getChat().add(new UserText(this.currentUser.getUsername()+ ": " + text, color, size));
+			
+			NetworkManager.getInstance().notifyAllUsersOfGroup(MessageHandler.getSendEventMessage(Constants.SEND_MESSAGE_EVENT,
+					groupname, this.currentUser.getUsername() + ": " + text, color, size), group);
+						
 		}
 	}
 	
@@ -289,6 +281,8 @@ public class DashboardController implements ActionListener {
 			NetworkManager.getInstance().sendRequestToUser(MessageHandler.getSendEventMessage(Constants.CANVAS_REQUEST_EVENT,
 					this.currentUser.getUsername(), group.getGroupName()), user);
 			
+			NetworkManager.getInstance().sendRequestToUser(MessageHandler.getSendEventMessage(Constants.CHAT_REQUEST_EVENT,
+					this.currentUser.getUsername(), group.getGroupName()), user);
 			break;
 		}
 	}
@@ -296,15 +290,9 @@ public class DashboardController implements ActionListener {
 	public void joinToGroup(String groupname, String color) {
 		Group group = application.getGroup(groupChanged);
 		currentUser.getGroups().add(group);
-		//DataBaseManager.addGroupToDataBase(groupChanged, this.currentUser.getUsername(), color);
-		//this.view.addNewUserToGroup(this.currentUser.getUsername(), groupChanged);
 		this.view.insertNewTab(groupChanged);
-		//this.view.updateLegend(this.getUsersAndColors(group));
 		this.getCanvasOfGroup(groupChanged).setColor(ControlUtil.getNewColor(color));
-		
-		//NetworkManager.getInstance().notifyAllUsers(MessageHandler.getSendEventMessage(Constants.ADD_USER_TO_GROUP_EVENT, 
-													//this.currentUser.getUsername(), groupChanged, color));
-		
+
 		this.getGroupInfo(group);
 	}
 	
@@ -322,14 +310,6 @@ public class DashboardController implements ActionListener {
 			}
 		}
 		DataBaseManager.removeUserFromGroups(user.getUsername());
-	}
-	
-	public void updateCanvas(String groupName, String form, Color color, int x, int y) {
-		CanvasInfo info = this.getCanvasInfo(groupName);
-		info.getCanvas().getShapes().add(new Shape(form, color, x, y));
-		if(this.view.checkCurrentCanvas(groupName)) {
-			info.getCanvas().repaint();
-		}
 	}
 	
 	/* Methods used by frame */
@@ -376,8 +356,16 @@ public class DashboardController implements ActionListener {
 	}
 	
 	/* Canvas methods */
+	public void updateCanvas(String groupName, String form, Color color, int x, int y) {
+		GroupInfo info = this.getGroupInfo(groupName);
+		info.getCanvas().getShapes().add(new Shape(form, color, x, y));
+		if(this.view.checkCurrentCanvas(groupName)) {
+			info.getCanvas().repaint();
+		}
+	}
+	
 	public MyCanvas getCanvasOfGroup(String groupName) {
-		for(CanvasInfo info : this.canvasOfGroups) {
+		for(GroupInfo info : this.canvasOfGroups) {
 			if(info.getGroupName().equals(groupName)) {
 				return info.getCanvas();
 			}
@@ -386,8 +374,8 @@ public class DashboardController implements ActionListener {
 		return null;
 	}
 	
-	public CanvasInfo getCanvasInfo(MyCanvas canvas) {
-		for(CanvasInfo info : this.canvasOfGroups) {
+	public GroupInfo getGroupInfo(MyCanvas canvas) {
+		for(GroupInfo info : this.canvasOfGroups) {
 			if(info.getCanvas().equals(canvas)) {
 				return info;
 			}
@@ -396,8 +384,8 @@ public class DashboardController implements ActionListener {
 		return null;
 	}
 	
-	public CanvasInfo getCanvasInfo(String groupName) {
-		for(CanvasInfo info : this.canvasOfGroups) {
+	public GroupInfo getGroupInfo(String groupName) {
+		for(GroupInfo info : this.canvasOfGroups) {
 			if(info.getGroupName().equals(groupName)) {
 				return info;
 			}
@@ -407,7 +395,7 @@ public class DashboardController implements ActionListener {
 	}
 	
 	public void removeCanvas(String groupName) {
-		for(CanvasInfo info : this.canvasOfGroups) {
+		for(GroupInfo info : this.canvasOfGroups) {
 			if(info.getGroupName().equals(groupName)) {
 				this.canvasOfGroups.remove(info);
 				break;
@@ -415,5 +403,15 @@ public class DashboardController implements ActionListener {
 		}
 	}
 	
-	
+	/* Chat area methods */
+	public void updateChatArea(GroupInfo info) {
+		this.view.getTextPane().setText("");
+		for(UserText txt : info.getChat()) {
+			this.view.addTextToChat(txt.getText(), txt.getColor(), txt.getSize());
+		}
+	}
+
+	public void addReceivedTextInChat(UserText txt) {
+		this.view.addTextToChat(txt.getText(), txt.getColor(), txt.getSize());
+	}
 }

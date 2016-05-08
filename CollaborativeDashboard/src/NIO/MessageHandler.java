@@ -13,12 +13,12 @@ import Controllers.ApplicationController;
 import Controllers.Constants;
 import Controllers.ControlUtil;
 import Controllers.DashboardController;
-
-import Models.CanvasInfo;
+import Models.GroupInfo;
 import Models.Group;
 import Models.OnlineUser;
 import Models.Shape;
 import Models.User;
+import Models.UserText;
 
 public class MessageHandler {
 	private static Logger logger = Logger.getLogger(MessageHandler.class);
@@ -86,6 +86,26 @@ public class MessageHandler {
 					concat((String) args[0]).concat("\",\"shapes\":").
 					concat((String) args[1]).concat("}");
 			break;
+			
+		case Constants.CHAT_REQUEST_EVENT:
+			message = "{\"method\":\"".concat("chat_request").concat("\",\"username\":\"").
+					concat((String) args[0]).concat("\",\"groupname\":\"").
+					concat((String) args[1]).concat("\"}");
+			break;
+		
+		case Constants.CHAT_RESPONSE_EVENT:
+			message = "{\"method\":\"".concat("chat_response").concat("\",\"groupname\":\"").
+					concat((String) args[0]).concat("\",\"chat\":").
+					concat((String) args[1]).concat("}");
+			break;
+		
+		case Constants.SEND_MESSAGE_EVENT:
+			message = "{\"method\":\"".concat("chat_message").concat("\",\"groupname\":\"").
+					concat((String) args[0]).concat("\",\"text\":\"").
+					concat((String) args[1]).concat("\",\"color\":\"").
+					concat((String) args[2]).concat("\",\"size\":\"").
+					concat((String) args[3]).concat("\"}");
+			break;
 
 		default:
 			break;
@@ -139,6 +159,13 @@ public class MessageHandler {
 					DashboardController.getInstance().getFrame().deleteGroup(group.getGroupName());
 				}
 			}
+			
+			int index = DashboardController.getInstance().getSelectedIndexTab();
+			if(index != -1) {
+				String groupName = DashboardController.getInstance().getFrame().getTabbedPane().getTitleAt(index);
+				Group  group = ApplicationController.getInstance().getGroup(groupName);
+				DashboardController.getInstance().getFrame().updateLegend(DashboardController.getInstance().getUsersAndColors(group));
+			}
 
 		} else if(method.equals("create_group")) {
 			String username = json.getString("username");
@@ -166,10 +193,24 @@ public class MessageHandler {
 			DashboardController.getInstance().getFrame().addNewUserToGroup(username, groupname);
 
 			if(DashboardController.getInstance().getCurrentUser().equals(user.getUsername())) {
-				//DashboardController.getInstance().joinToGroup(groupname, color);
+				logger.debug("Add me in " + groupname + " group.");
+				
+				DashboardController.getInstance().getFrame().insertNewTab(groupname);
+				DashboardController.getInstance().getCanvasOfGroup(groupname).setColor(ControlUtil.getNewColor(color));
+				DashboardController.getInstance().getGroupInfo(group);
+				
+			}
+
+			int index = DashboardController.getInstance().getSelectedIndexTab();
+			if(index != -1) {
+				String groupName = DashboardController.getInstance().getFrame().getTabbedPane().getTitleAt(index);
+				if(groupName.equals(groupname)) {
+					logger.debug("Need update to legend.");
+					DashboardController.getInstance().getFrame().updateLegend(DashboardController.getInstance().getUsersAndColors(group));
+				}
 			}
 			
-			
+
 		}
 		
 		else if(method.equals("leave_group")) {
@@ -196,6 +237,15 @@ public class MessageHandler {
 				ApplicationController.getInstance().getGroups().remove(group);
 				DashboardController.getInstance().getFrame().deleteGroup(groupname);
 			}
+			
+			int index = DashboardController.getInstance().getSelectedIndexTab();
+			if(index != -1) {
+				String groupName = DashboardController.getInstance().getFrame().getTabbedPane().getTitleAt(index);
+				if(groupName.equals(groupname)) {
+					logger.debug("Need update to legend.");
+					DashboardController.getInstance().getFrame().updateLegend(DashboardController.getInstance().getUsersAndColors(group));
+				}
+			}
 		}
 		
 		else if(method.equals("add_shape")) {
@@ -213,7 +263,7 @@ public class MessageHandler {
 			String username = json.getString("username");
 			
 			OnlineUser user = ApplicationController.getInstance().getOnlineUser(username);
-			CanvasInfo info = DashboardController.getInstance().getCanvasInfo(groupname);
+			GroupInfo info = DashboardController.getInstance().getGroupInfo(groupname);
 			String canvasShapes = info.getCanvasShapes();
 			
 			NetworkManager.getInstance().sendRequestToUser(MessageHandler.getSendEventMessage(Constants.CANVAS_RESPONSE_EVENT, 
@@ -222,7 +272,8 @@ public class MessageHandler {
 		
 		else if(method.equals("canvas_response")) {
 			String groupname = json.getString("groupname");
-			CanvasInfo info = DashboardController.getInstance().getCanvasInfo(groupname);
+			
+			GroupInfo info = DashboardController.getInstance().getGroupInfo(groupname);
 			JSONArray jsonArray = json.getJSONArray("shapes");
 			for (int i = 0; i < jsonArray.length(); i++) {
 		        JSONObject jsonObject = jsonArray.getJSONObject(i);
@@ -232,11 +283,56 @@ public class MessageHandler {
 				String x = jsonObject.getString("x");
 				String y = jsonObject.getString("y");
 				
+				logger.debug("Need update canvas.");
 				info.getCanvas().getShapes().add(new Shape(figure, ControlUtil.getNewColor(color), Integer.parseInt(x), 
 						Integer.parseInt(y)));
 				
 				info.getCanvas().repaint();
 			}
+		}
+		
+		else if(method.equals("chat_request")) {
+			String groupname = json.getString("groupname");
+			String username = json.getString("username");
+			
+			OnlineUser user = ApplicationController.getInstance().getOnlineUser(username);
+			GroupInfo info = DashboardController.getInstance().getGroupInfo(groupname);
+			String chat = info.getHistoryChat();
+			
+			NetworkManager.getInstance().sendRequestToUser(MessageHandler.getSendEventMessage(Constants.CHAT_RESPONSE_EVENT, 
+														 groupname, chat), user);
+		}
+		
+		else if(method.equals("chat_response")) {
+			String groupname = json.getString("groupname");
+			
+			logger.debug("Need update chat.");
+			
+			GroupInfo info = DashboardController.getInstance().getGroupInfo(groupname);
+			JSONArray jsonArray = json.getJSONArray("chat");
+			for (int i = 0; i < jsonArray.length(); i++) {
+		        JSONObject jsonObject = jsonArray.getJSONObject(i);
+		        
+		        String text = jsonObject.getString("text");
+				String color = jsonObject.getString("color");
+				String size = jsonObject.getString("size");
+				
+				info.getChat().add(new UserText(text, color, size));
+			}
+			
+			DashboardController.getInstance().updateChatArea(info);
+		}
+		
+		else if(method.equals("chat_message")) {
+			String groupname = json.getString("groupname");
+			String text = json.getString("text");
+			String color = json.getString("color");
+			String size = json.getString("size");
+			
+			GroupInfo info = DashboardController.getInstance().getGroupInfo(groupname);
+			UserText txt = new UserText(text, color, size);
+			info.getChat().add(txt);
+			DashboardController.getInstance().addReceivedTextInChat(txt);
 		}
 	}
 }

@@ -6,7 +6,6 @@ import javax.swing.*;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-import javax.swing.text.TabExpander;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -18,9 +17,8 @@ import Controllers.ControlUtil;
 import Controllers.DashboardController;
 import Controllers.PopClickListener;
 import Controllers.TabbedPaneController;
-import Models.CanvasInfo;
+import Models.GroupInfo;
 import Models.MyCanvas;
-import Models.OnlineUser;
 import Controllers.DrawTableController;
 
 import java.util.ArrayList;
@@ -76,6 +74,18 @@ public class DashboardFrame {
 	
 	public String getUsername() {
 		return username.getText();
+	}
+	
+	public JTabbedPane getTabbedPane() {
+		return DashboardFrame.tabbedPane;
+	}
+	
+	public JTextArea getUserText() {
+		return this.userText;
+	}
+	
+	public JTextPane getTextPane() {
+		return this.chatText;
 	}
 
 	/**
@@ -203,6 +213,7 @@ public class DashboardFrame {
 		
 		userText = new JTextArea();
 		userText.setBounds(300, 630, 600, 40);
+		userText.setForeground(Color.BLACK);
 		frame.getContentPane().add(userText);
 		
 		sendBtn = new JButton(Constants.SEND);
@@ -358,11 +369,9 @@ public class DashboardFrame {
 	}
 	
 	public JComponent makeDrawTable(String groupName) {
-		
-		//JPanel panel = new JPanel(false);
+
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.setLayout(null);
-		
 		
 		JButton square = new JButton("");
 		square.setBounds(10, 10, 25, 25);
@@ -408,7 +417,7 @@ public class DashboardFrame {
         panel.add(canvas);
 
         /* ADD CANVAS TO DATA BASE */
-        this.controller.getCanvasOfGroups().add(new CanvasInfo(canvas, groupName));
+        this.controller.getCanvasOfGroups().add(new GroupInfo(canvas, groupName));
         
         return panel;
 	}
@@ -477,11 +486,15 @@ public class DashboardFrame {
 		userText.setForeground(ControlUtil.getNewColor(color));
 	}
 	
-	public void addTextToChat() {
-		this.appendToPane(chatText, this.userText.getText(), this.userText.getForeground(), this.userText.getFont().getSize());
+	public void addTextToChat(String text, String color, String size) {
+		this.appendToPane(false, chatText, text, ControlUtil.getNewColor(color), Integer.parseInt(size));
 	}
 	
-	private void appendToPane(JTextPane textPane, String msg, Color c, int size) {
+	public void addTextToChat() {
+		this.appendToPane(true, chatText, this.userText.getText(), this.userText.getForeground(), this.userText.getFont().getSize());
+	}
+	
+	private void appendToPane(Boolean flag, JTextPane textPane, String msg, Color c, int size) {
 		
         SimpleAttributeSet aset = new SimpleAttributeSet();
         aset.addAttribute(StyleConstants.FontFamily, "Dialog");
@@ -489,7 +502,12 @@ public class DashboardFrame {
         aset.addAttribute(StyleConstants.Foreground, c);
         
         StyledDocument doc = textPane.getStyledDocument();
-        String string = this.username.getText().concat(": ").concat(msg).concat("\n");
+        String string;
+        if(flag) {
+        	string = this.username.getText().concat(": ").concat(msg).concat("\n");
+        } else {
+        	string = msg.concat("\n");
+        }
         try {
             doc.insertString(doc.getLength(), string, aset );
         } catch(Exception e) { 

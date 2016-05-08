@@ -52,4 +52,7 @@ public interface Constants {
 	public static int 	ADD_SHAPE_EVENT				= 7;
 	public static int 	CANVAS_REQUEST_EVENT		= 8;
 	public static int 	CANVAS_RESPONSE_EVENT		= 9;
+	public static int 	SEND_MESSAGE_EVENT			= 10;
+	public static int 	CHAT_REQUEST_EVENT			= 11;
+	public static int 	CHAT_RESPONSE_EVENT			= 12;
 }

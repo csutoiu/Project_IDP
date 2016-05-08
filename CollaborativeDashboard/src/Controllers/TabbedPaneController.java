@@ -6,7 +6,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import Models.CanvasInfo;
+import Models.GroupInfo;
 import Models.Group;
 
 public class TabbedPaneController implements ChangeListener {
@@ -28,13 +28,14 @@ public class TabbedPaneController implements ChangeListener {
 			HashMap<String, String> usersAndColors = this.controller.getUsersAndColors(group);
 			this.controller.getFrame().updateLegend(usersAndColors);
 			
-			CanvasInfo info = this.controller.getCanvasInfo(groupName);
-			if(!info.getImage().isEmpty()) {
-				info.loadImage();
-			}
+			GroupInfo info = this.controller.getGroupInfo(groupName);
+			this.controller.updateChatArea(info);
+			this.controller.getFrame().getUserText().setText("");
 			
 		} else {
 			this.controller.getFrame().clearLegend();
+			this.controller.getFrame().getTextPane().setText("");
+			this.controller.getFrame().getUserText().setText("");
 		}
 		
 		controller.setSelectedIndexTab(tabbedPane.getSelectedIndex());

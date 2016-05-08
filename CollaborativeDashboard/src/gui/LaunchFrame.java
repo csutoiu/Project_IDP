@@ -6,10 +6,6 @@ import javax.swing.*;
 import Controllers.Constants;
 import Controllers.SignInController;
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-
-
 public class LaunchFrame {
 	
 	private SignInController controller = SignInController.getInstance();

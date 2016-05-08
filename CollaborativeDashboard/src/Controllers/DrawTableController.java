@@ -4,14 +4,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 
-import Models.CanvasInfo;
+import Models.GroupInfo;
 import Models.Group;
 import Models.MyCanvas;
 import NIO.MessageHandler;
 import NIO.NetworkManager;
-import gui.GUIHelper;
 
 public class DrawTableController extends MouseAdapter implements ActionListener {
 	
@@ -46,11 +44,8 @@ public class DrawTableController extends MouseAdapter implements ActionListener 
 		if(!canvas.getFigure().isEmpty()) {
 			canvas.drawFigure(e.getX(), e.getY());
 			
-			CanvasInfo info = this.controller.getCanvasInfo(canvas);
+			GroupInfo info = this.controller.getGroupInfo(canvas);
 			Group group = ApplicationController.getInstance().getGroup(info.getGroupName());
-			//info.saveShape(canvas.getFigure(), ControlUtil.getStringColor(canvas.getColor()), e.getX(), e.getY());
-			
-			
 			
 			NetworkManager.getInstance().notifyAllUsersOfGroup(MessageHandler.getSendEventMessage
 					(Constants.ADD_SHAPE_EVENT, info.getGroupName(), canvas.getFigure(),

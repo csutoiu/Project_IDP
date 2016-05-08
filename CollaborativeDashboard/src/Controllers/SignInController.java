@@ -83,7 +83,6 @@ public class SignInController implements ActionListener, DocumentListener {
 	    	try {
 				application.setInfo();
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				logger.error(e);
 			}
 			

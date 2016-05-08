@@ -3,8 +3,6 @@ package NIO;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-
 import Controllers.ApplicationController;
 import Models.Group;
 import Models.OnlineUser;
@@ -13,7 +11,6 @@ public class NetworkManager {
 	
 	private static NetworkManager me;
 	private OnlineUser currentUser;
-	private static Logger logger = Logger.getLogger(NetworkManager.class);
 	
 	private NetworkManager() {
     }
@@ -40,7 +37,7 @@ public class NetworkManager {
     		if(currentUser != null && user.getUsername().equals(currentUser.getUsername())) {
     			continue;
     		}
-    		//logger.info("User " + this.currentUser.getUsername() + " send message to " + user.getUsername());
+    		
     		Thread clientSever = new Thread(new Client("localhost", user.getPort(), message));
     		clientSever.start();
     	}
@@ -55,7 +52,6 @@ public class NetworkManager {
 				 continue;
 			 }
 			 
-			 //logger.info("User " + currentUser.getUsername() + " send message to " + user.getUsername());
 			 Thread clientSever = new Thread(new Client("localhost", user.getPort(), message));
 			 clientSever.start();
 			 

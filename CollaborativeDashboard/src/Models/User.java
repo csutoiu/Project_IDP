@@ -23,20 +23,4 @@ public class User {
 	public String getPassword() {
 		return this.password;
 	}
-	
-	/*public ArrayList<Group> getGroups() {
-		return this.groups;
-	}
-	
-	public void joinToGroup(Group group) {
-		this.groups.add(group);
-		group.addUserToGroup(this);
-	}
-	
-	public void leaveGroup(Group group) {
-		if(this.groups.contains(group)) {
-			this.groups.remove(group);
-		}
-	}*/
-	
 }

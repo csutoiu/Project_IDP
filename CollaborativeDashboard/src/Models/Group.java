@@ -31,10 +31,4 @@ public class Group {
 		this.users.put(color, user);
 		return true;
 	}
-	
-	/*public void addUserToGroup(User user) {
-		if(!this.users.contains(user)) {
-			this.users.add(user);
-		}
-	}*/
 }
